@@ -1067,13 +1067,18 @@ def render_line_items(line_items: list[dict]) -> None:
 # Main Application
 # =============================================================================
 def main():
-    # Header
-    st.markdown('<p class="main-header">🤖 AI-Powered Claim Auditor</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-header">Upload Xactimate PDF estimates for intelligent leakage detection</p>', unsafe_allow_html=True)
+    # Header - Professional Enterprise Branding
+    st.markdown('<p class="main-header">Claim Integrity Engine</p>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-header">Xactimate Estimate Analysis & Leakage Detection Platform</p>', unsafe_allow_html=True)
     
     # Sidebar
     with st.sidebar:
-        st.image("https://img.icons8.com/fluency/96/artificial-intelligence.png", width=64)
+        st.markdown('''
+        <div style="text-align: center; padding: 0.5rem;">
+            <span style="font-size: 2.5rem;">🛡️</span>
+            <p style="font-size: 0.75rem; color: #94A3B8; margin-top: 0.5rem; letter-spacing: 0.1em;">ENTERPRISE</p>
+        </div>
+        ''', unsafe_allow_html=True)
         st.title("Configuration")
         st.markdown("---")
         
@@ -1270,65 +1275,74 @@ LEAKAGE FINDINGS
                 )
     
     elif not uploaded_file:
-        # Welcome screen
+        # Welcome screen - Professional Enterprise Design
         st.markdown("---")
         
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
             st.markdown("""
-            <div style="text-align: center; padding: 3rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; color: white;">
-                <h2>👋 Welcome to AI Claim Auditor</h2>
-                <p style="opacity: 0.9; margin-top: 1rem;">
-                    Upload your Xactimate PDF estimate to receive an AI-powered audit analysis.
+            <div style="text-align: center; padding: 2.5rem; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                <h2 style="color: #F1F5F9; font-weight: 600; margin-bottom: 0.75rem;">Upload Estimate to Begin</h2>
+                <p style="color: #94A3B8; margin-top: 0.75rem; font-size: 0.95rem;">
+                    Submit your Xactimate PDF for comprehensive audit analysis
                 </p>
-                <div style="margin-top: 2rem;">
-                    <p><strong>What we analyze:</strong></p>
-                    <p>💧 Water Mitigation • 🏠 Flooring • 🏗️ Roofing • 💰 Financials</p>
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+                    <p style="color: #64748B; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;">Analysis Coverage</p>
+                    <p style="color: #CBD5E1; margin-top: 0.5rem;">Water Mitigation  •  Flooring  •  Roofing  •  Financials</p>
                 </div>
             </div>
             """, unsafe_allow_html=True)
         
         st.markdown("---")
         
-        # Features
-        st.markdown("### 🎯 Key Features")
+        # Features - Clean Professional Cards
+        st.markdown("### Audit Capabilities")
         
         feat1, feat2, feat3, feat4 = st.columns(4)
         
         with feat1:
             st.markdown("""
-            **💧 Water Mitigation**
-            
-            Detects excessive equipment charges and category mismatches
-            """)
+            <div class="glass-metric-card" style="min-height: 120px;">
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">💧</div>
+                <strong style="color: #F1F5F9;">Water Mitigation</strong>
+                <p style="color: #94A3B8; font-size: 0.85rem; margin-top: 0.5rem;">Equipment & category validation</p>
+            </div>
+            """, unsafe_allow_html=True)
         
         with feat2:
             st.markdown("""
-            **🏠 Flooring Analysis**
-            
-            Identifies double-billing for carpet and pad removal
-            """)
+            <div class="glass-metric-card" style="min-height: 120px;">
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🏠</div>
+                <strong style="color: #F1F5F9;">Flooring Analysis</strong>
+                <p style="color: #94A3B8; font-size: 0.85rem; margin-top: 0.5rem;">Double-billing detection</p>
+            </div>
+            """, unsafe_allow_html=True)
         
         with feat3:
             st.markdown("""
-            **🏗️ Roofing Audit**
-            
-            Validates waste factors for gable and hip roofs
-            """)
+            <div class="glass-metric-card" style="min-height: 120px;">
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🏗️</div>
+                <strong style="color: #F1F5F9;">Roofing Audit</strong>
+                <p style="color: #94A3B8; font-size: 0.85rem; margin-top: 0.5rem;">Waste factor validation</p>
+            </div>
+            """, unsafe_allow_html=True)
         
         with feat4:
             st.markdown("""
-            **💰 Financial Check**
-            
-            Verifies deductible application and claim calculations
-            """)
+            <div class="glass-metric-card" style="min-height: 120px;">
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">💰</div>
+                <strong style="color: #F1F5F9;">Financial Check</strong>
+                <p style="color: #94A3B8; font-size: 0.85rem; margin-top: 0.5rem;">Deductible & limits review</p>
+            </div>
+            """, unsafe_allow_html=True)
     
-    # Footer
+    # Footer - Professional
     st.markdown("---")
     st.markdown("""
-    <div style="text-align: center; color: #9CA3AF; padding: 1rem;">
-        <p>AI Claim Auditor | Powered by Google Gemini</p>
-        <p style="font-size: 0.75rem;">🔒 PII Protection Enabled • SOC2 Compliant Design</p>
+    <div style="text-align: center; color: #64748B; padding: 1rem;">
+        <p style="font-size: 0.85rem;">Claim Integrity Engine™  •  Enterprise Audit Platform</p>
+        <p style="font-size: 0.7rem; margin-top: 0.25rem;">🔒 PII Redaction Enabled  •  SOC2 Compliant Architecture</p>
     </div>
     """, unsafe_allow_html=True)
 
