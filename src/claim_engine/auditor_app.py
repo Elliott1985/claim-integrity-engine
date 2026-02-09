@@ -75,185 +75,175 @@ st.set_page_config(
 # =============================================================================
 ENTERPRISE_CSS = """
 <style>
-    /* ===== Import Professional Font ===== */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    /* ===== Microsoft Fluent Design System ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&display=swap');
     
-    /* ===== Force Dark Theme Override ===== */
+    /* ===== CSS Variables - Microsoft Office Colors ===== */
     :root {
-        --background-color: #0E1117 !important;
-        --secondary-background-color: #1E293B !important;
-        --text-color: #F1F5F9 !important;
-        --font: 'Inter', sans-serif !important;
+        --ms-blue: #0078D4;
+        --ms-blue-dark: #106EBE;
+        --ms-blue-light: #DEECF9;
+        --ms-green: #107C10;
+        --ms-red: #D13438;
+        --ms-orange: #FF8C00;
+        --ms-gray-10: #FAF9F8;
+        --ms-gray-20: #F3F2F1;
+        --ms-gray-30: #EDEBE9;
+        --ms-gray-40: #D2D0CE;
+        --ms-gray-90: #605E5C;
+        --ms-gray-130: #323130;
+        --ms-gray-150: #201F1E;
+        --ms-font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
     }
     
-    /* ===== Global Styles with Maximum Specificity ===== */
+    /* ===== Global Styles - Clean Office Look ===== */
     html, body, [class*="css"], .stApp, [data-testid="stAppViewContainer"] {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-        background-color: #0E1117 !important;
+        font-family: var(--ms-font) !important;
+        background-color: #FFFFFF !important;
     }
     
     .stApp {
-        background: linear-gradient(135deg, #0E1117 0%, #1a1f2e 50%, #0E1117 100%) !important;
+        background: #FFFFFF !important;
     }
     
     [data-testid="stAppViewContainer"] > .main {
-        background: transparent !important;
+        background: #FFFFFF !important;
     }
     
     [data-testid="stHeader"] {
-        background: rgba(14, 17, 23, 0.8) !important;
-        backdrop-filter: blur(10px) !important;
+        background: #FFFFFF !important;
+        border-bottom: 1px solid var(--ms-gray-30) !important;
     }
     
-    /* ===== Main Header Styling ===== */
+    /* ===== Main Header - Office Style ===== */
     .main-header {
-        font-family: 'Inter', sans-serif !important;
-        font-size: 2.75rem !important;
-        font-weight: 700 !important;
-        background: linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #F472B6 100%) !important;
-        -webkit-background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
-        background-clip: text !important;
-        text-align: center !important;
-        margin-bottom: 0.5rem !important;
-        letter-spacing: -0.02em !important;
+        font-family: var(--ms-font) !important;
+        font-size: 2rem !important;
+        font-weight: 600 !important;
+        color: var(--ms-gray-150) !important;
+        text-align: left !important;
+        margin-bottom: 0.25rem !important;
+        letter-spacing: -0.01em !important;
+        -webkit-text-fill-color: var(--ms-gray-150) !important;
+        background: none !important;
     }
     
     .sub-header {
-        font-family: 'Inter', sans-serif !important;
-        font-size: 1.1rem !important;
-        color: #94A3B8 !important;
-        text-align: center !important;
-        margin-bottom: 2rem !important;
+        font-family: var(--ms-font) !important;
+        font-size: 0.95rem !important;
+        color: var(--ms-gray-90) !important;
+        text-align: left !important;
+        margin-bottom: 1.5rem !important;
         font-weight: 400 !important;
     }
     
-    /* ===== Glassmorphism Metric Cards - Custom HTML Version ===== */
+    /* ===== Office-Style Metric Cards ===== */
     .glass-metric-card {
-        background: rgba(30, 41, 59, 0.7) !important;
-        backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
-        border: 1px solid rgba(148, 163, 184, 0.2) !important;
-        border-radius: 16px !important;
-        padding: 1.5rem !important;
-        box-shadow: 
-            0 4px 6px -1px rgba(0, 0, 0, 0.3),
-            0 2px 4px -1px rgba(0, 0, 0, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-        transition: all 0.3s ease !important;
-        text-align: center !important;
+        background: #FFFFFF !important;
+        border: 1px solid var(--ms-gray-30) !important;
+        border-radius: 4px !important;
+        padding: 1.25rem !important;
+        box-shadow: 0 1.6px 3.6px 0 rgba(0,0,0,0.132), 0 0.3px 0.9px 0 rgba(0,0,0,0.108) !important;
+        transition: box-shadow 0.2s ease !important;
+        text-align: left !important;
         height: 100% !important;
-        min-height: 140px !important;
+        min-height: 120px !important;
     }
     
     .glass-metric-card:hover {
-        transform: translateY(-4px) !important;
-        box-shadow: 
-            0 12px 20px -4px rgba(0, 0, 0, 0.4),
-            0 4px 8px -2px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-        border-color: rgba(96, 165, 250, 0.5) !important;
+        box-shadow: 0 3.2px 7.2px 0 rgba(0,0,0,0.132), 0 0.6px 1.8px 0 rgba(0,0,0,0.108) !important;
+        border-color: var(--ms-blue) !important;
     }
     
     .glass-metric-label {
-        color: #94A3B8 !important;
-        font-weight: 500 !important;
+        color: var(--ms-gray-90) !important;
+        font-weight: 400 !important;
         font-size: 0.8rem !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.08em !important;
-        margin-bottom: 0.75rem !important;
-    }
-    
-    .glass-metric-value {
-        color: #F1F5F9 !important;
-        font-weight: 700 !important;
-        font-size: 2rem !important;
-        line-height: 1.2 !important;
+        text-transform: none !important;
+        letter-spacing: normal !important;
         margin-bottom: 0.5rem !important;
     }
     
-    .glass-metric-value.positive { color: #10B981 !important; }
-    .glass-metric-value.negative { color: #EF4444 !important; }
-    .glass-metric-value.warning { color: #F59E0B !important; }
-    
-    .glass-metric-delta {
-        font-size: 0.85rem !important;
-        font-weight: 500 !important;
-        color: #64748B !important;
+    .glass-metric-value {
+        color: var(--ms-gray-150) !important;
+        font-weight: 600 !important;
+        font-size: 1.75rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 0.25rem !important;
     }
     
-    .glass-metric-delta.positive { color: #10B981 !important; }
-    .glass-metric-delta.negative { color: #EF4444 !important; }
+    .glass-metric-value.positive { color: var(--ms-green) !important; }
+    .glass-metric-value.negative { color: var(--ms-red) !important; }
+    .glass-metric-value.warning { color: var(--ms-orange) !important; }
     
-    /* ===== Fallback for st.metric (if used) ===== */
+    .glass-metric-delta {
+        font-size: 0.8rem !important;
+        font-weight: 400 !important;
+        color: var(--ms-gray-90) !important;
+    }
+    
+    .glass-metric-delta.positive { color: var(--ms-green) !important; }
+    .glass-metric-delta.negative { color: var(--ms-red) !important; }
+    
+    /* ===== st.metric Office Styling ===== */
     [data-testid="stMetric"],
     [data-testid="metric-container"],
     .stMetric {
-        background: rgba(30, 41, 59, 0.7) !important;
-        backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
-        border: 1px solid rgba(148, 163, 184, 0.2) !important;
-        border-radius: 16px !important;
-        padding: 1.25rem !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+        background: #FFFFFF !important;
+        border: 1px solid var(--ms-gray-30) !important;
+        border-radius: 4px !important;
+        padding: 1rem !important;
+        box-shadow: 0 1.6px 3.6px 0 rgba(0,0,0,0.132), 0 0.3px 0.9px 0 rgba(0,0,0,0.108) !important;
     }
     
     [data-testid="stMetricLabel"],
     [data-testid="stMetric"] label {
-        color: #94A3B8 !important;
-        font-weight: 500 !important;
-        font-size: 0.875rem !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.05em !important;
+        color: var(--ms-gray-90) !important;
+        font-weight: 400 !important;
+        font-size: 0.85rem !important;
+        text-transform: none !important;
     }
     
     [data-testid="stMetricValue"] {
-        color: #F1F5F9 !important;
-        font-weight: 700 !important;
-        font-size: 1.75rem !important;
+        color: var(--ms-gray-150) !important;
+        font-weight: 600 !important;
+        font-size: 1.5rem !important;
     }
     
-    [data-testid="stMetricDelta"] {
-        font-weight: 500 !important;
-    }
-    
-    [data-testid="stMetricDelta"][data-testid-delta-type="positive"] { color: #10B981 !important; }
-    [data-testid="stMetricDelta"][data-testid-delta-type="negative"] { color: #EF4444 !important; }
-    
-    /* ===== Sidebar Styling ===== */
+    /* ===== Sidebar - Office Navigation Pane ===== */
     [data-testid="stSidebar"],
     [data-testid="stSidebar"] > div:first-child {
-        background: linear-gradient(180deg, #1E293B 0%, #0F172A 100%) !important;
-        border-right: 1px solid rgba(148, 163, 184, 0.1) !important;
+        background: var(--ms-gray-20) !important;
+        border-right: 1px solid var(--ms-gray-30) !important;
     }
     
     [data-testid="stSidebar"] .stMarkdown,
     [data-testid="stSidebar"] p,
     [data-testid="stSidebar"] span {
-        color: #E2E8F0 !important;
+        color: var(--ms-gray-130) !important;
     }
     
     [data-testid="stSidebar"] h1, 
     [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] h3 {
-        color: #F1F5F9 !important;
+        color: var(--ms-gray-150) !important;
         font-weight: 600 !important;
     }
     
-    /* ===== File Uploader - Enterprise Style ===== */
+    /* ===== File Uploader - Office Style ===== */
     [data-testid="stFileUploader"],
     [data-testid="stFileUploadDropzone"] {
-        background: rgba(30, 41, 59, 0.5) !important;
-        border: 2px dashed rgba(96, 165, 250, 0.4) !important;
-        border-radius: 12px !important;
-        padding: 1.5rem !important;
-        transition: all 0.3s ease !important;
+        background: var(--ms-gray-10) !important;
+        border: 1px dashed var(--ms-gray-40) !important;
+        border-radius: 4px !important;
+        padding: 1.25rem !important;
+        transition: all 0.2s ease !important;
     }
     
     [data-testid="stFileUploader"]:hover,
     [data-testid="stFileUploadDropzone"]:hover {
-        border-color: rgba(96, 165, 250, 0.7) !important;
-        background: rgba(30, 41, 59, 0.7) !important;
+        border-color: var(--ms-blue) !important;
+        background: var(--ms-blue-light) !important;
     }
     
     [data-testid="stFileUploader"] section,
@@ -261,280 +251,281 @@ ENTERPRISE_CSS = """
         background: transparent !important;
     }
     
+    /* ===== Buttons - Office Fluent Style ===== */
     [data-testid="stFileUploader"] button,
     [data-testid="stBaseButton-secondary"] {
-        background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%) !important;
+        background: var(--ms-blue) !important;
         color: white !important;
         border: none !important;
-        border-radius: 8px !important;
+        border-radius: 4px !important;
         font-weight: 600 !important;
-        padding: 0.5rem 1.5rem !important;
-        transition: all 0.3s ease !important;
+        padding: 0.5rem 1.25rem !important;
+        transition: background 0.2s ease !important;
     }
     
-    /* ===== Primary Button Styling ===== */
+    [data-testid="stFileUploader"] button:hover,
+    [data-testid="stBaseButton-secondary"]:hover {
+        background: var(--ms-blue-dark) !important;
+    }
+    
+    /* ===== Primary Button - Office Blue ===== */
     [data-testid="stBaseButton-primary"],
     .stButton > button[kind="primary"],
     button[kind="primary"] {
-        background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%) !important;
+        background: var(--ms-blue) !important;
         color: white !important;
         border: none !important;
-        border-radius: 10px !important;
+        border-radius: 4px !important;
         font-weight: 600 !important;
-        font-size: 1rem !important;
-        padding: 0.75rem 2rem !important;
-        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35) !important;
-        transition: all 0.3s ease !important;
+        font-size: 0.9rem !important;
+        padding: 0.6rem 1.5rem !important;
+        box-shadow: none !important;
+        transition: background 0.2s ease !important;
     }
     
     [data-testid="stBaseButton-primary"]:hover,
     .stButton > button[kind="primary"]:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
+        background: var(--ms-blue-dark) !important;
+        transform: none !important;
     }
     
-    /* ===== Data Tables - Zebra Stripe Pattern ===== */
+    /* ===== Data Tables - Excel Style ===== */
     [data-testid="stDataFrame"],
     .stDataFrame {
-        border-radius: 12px !important;
+        border: 1px solid var(--ms-gray-30) !important;
+        border-radius: 0 !important;
         overflow: hidden !important;
-        border: 1px solid rgba(148, 163, 184, 0.2) !important;
     }
     
     [data-testid="stDataFrame"] [data-testid="stDataFrameResizable"],
     .stDataFrame [data-testid="stDataFrameResizable"] {
-        background: rgba(15, 23, 42, 0.9) !important;
+        background: #FFFFFF !important;
     }
     
     [data-testid="stDataFrame"] thead tr th,
     .stDataFrame thead tr th {
-        background: linear-gradient(135deg, #1E293B 0%, #334155 100%) !important;
-        color: #F1F5F9 !important;
+        background: var(--ms-gray-20) !important;
+        color: var(--ms-gray-130) !important;
         font-weight: 600 !important;
-        text-transform: uppercase !important;
-        font-size: 0.75rem !important;
-        letter-spacing: 0.05em !important;
-        padding: 1rem !important;
-        border-bottom: 2px solid rgba(96, 165, 250, 0.3) !important;
+        font-size: 0.8rem !important;
+        padding: 0.75rem 1rem !important;
+        border-bottom: 1px solid var(--ms-gray-30) !important;
+        text-transform: none !important;
     }
     
     [data-testid="stDataFrame"] tbody tr:nth-child(odd),
     .stDataFrame tbody tr:nth-child(odd) {
-        background: rgba(30, 41, 59, 0.5) !important;
+        background: #FFFFFF !important;
     }
     
     [data-testid="stDataFrame"] tbody tr:nth-child(even),
     .stDataFrame tbody tr:nth-child(even) {
-        background: rgba(15, 23, 42, 0.7) !important;
+        background: var(--ms-gray-10) !important;
     }
     
     [data-testid="stDataFrame"] tbody tr:hover,
     .stDataFrame tbody tr:hover {
-        background: rgba(59, 130, 246, 0.15) !important;
+        background: var(--ms-blue-light) !important;
     }
     
     [data-testid="stDataFrame"] tbody td,
     .stDataFrame tbody td {
-        color: #E2E8F0 !important;
-        padding: 0.875rem 1rem !important;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
+        color: var(--ms-gray-130) !important;
+        padding: 0.6rem 1rem !important;
+        border-bottom: 1px solid var(--ms-gray-30) !important;
     }
     
-    /* ===== Expander Styling ===== */
+    /* ===== Expander - Office Collapsible ===== */
     [data-testid="stExpander"],
     .streamlit-expanderHeader {
-        background: rgba(30, 41, 59, 0.7) !important;
-        border: 1px solid rgba(148, 163, 184, 0.2) !important;
-        border-radius: 10px !important;
-        color: #F1F5F9 !important;
-        font-weight: 500 !important;
+        background: #FFFFFF !important;
+        border: 1px solid var(--ms-gray-30) !important;
+        border-radius: 4px !important;
+        color: var(--ms-gray-130) !important;
+        font-weight: 400 !important;
     }
     
     [data-testid="stExpander"]:hover,
     .streamlit-expanderHeader:hover {
-        border-color: rgba(96, 165, 250, 0.4) !important;
-        background: rgba(30, 41, 59, 0.9) !important;
+        border-color: var(--ms-blue) !important;
+        background: var(--ms-gray-10) !important;
     }
     
     [data-testid="stExpanderDetails"],
     .streamlit-expanderContent {
-        background: rgba(15, 23, 42, 0.8) !important;
-        border: 1px solid rgba(148, 163, 184, 0.15) !important;
+        background: #FFFFFF !important;
+        border: 1px solid var(--ms-gray-30) !important;
         border-top: none !important;
-        border-radius: 0 0 10px 10px !important;
+        border-radius: 0 0 4px 4px !important;
     }
     
-    /* ===== Alert Boxes ===== */
+    /* ===== Alert Boxes - Office Style ===== */
     [data-testid="stAlert"][data-baseweb="notification"][kind="success"],
     .stSuccess, div[data-baseweb="notification"].success {
-        background: rgba(16, 185, 129, 0.15) !important;
-        border: 1px solid rgba(16, 185, 129, 0.3) !important;
-        border-left: 4px solid #10B981 !important;
-        border-radius: 8px !important;
-        color: #6EE7B7 !important;
+        background: #DFF6DD !important;
+        border: 1px solid var(--ms-green) !important;
+        border-left: 4px solid var(--ms-green) !important;
+        border-radius: 4px !important;
+        color: #0B6A0B !important;
     }
     
     [data-testid="stAlert"][data-baseweb="notification"][kind="warning"],
     .stWarning, div[data-baseweb="notification"].warning {
-        background: rgba(245, 158, 11, 0.15) !important;
-        border: 1px solid rgba(245, 158, 11, 0.3) !important;
-        border-left: 4px solid #F59E0B !important;
-        border-radius: 8px !important;
-        color: #FCD34D !important;
+        background: #FFF4CE !important;
+        border: 1px solid var(--ms-orange) !important;
+        border-left: 4px solid var(--ms-orange) !important;
+        border-radius: 4px !important;
+        color: #8A6200 !important;
     }
     
     [data-testid="stAlert"][data-baseweb="notification"][kind="error"],
     .stError, div[data-baseweb="notification"].error {
-        background: rgba(239, 68, 68, 0.15) !important;
-        border: 1px solid rgba(239, 68, 68, 0.3) !important;
-        border-left: 4px solid #EF4444 !important;
-        border-radius: 8px !important;
-        color: #FCA5A5 !important;
+        background: #FDE7E9 !important;
+        border: 1px solid var(--ms-red) !important;
+        border-left: 4px solid var(--ms-red) !important;
+        border-radius: 4px !important;
+        color: #A80000 !important;
     }
     
     [data-testid="stAlert"][data-baseweb="notification"][kind="info"],
     .stInfo, div[data-baseweb="notification"].info {
-        background: rgba(59, 130, 246, 0.15) !important;
-        border: 1px solid rgba(59, 130, 246, 0.3) !important;
-        border-left: 4px solid #3B82F6 !important;
-        border-radius: 8px !important;
-        color: #93C5FD !important;
+        background: var(--ms-blue-light) !important;
+        border: 1px solid var(--ms-blue) !important;
+        border-left: 4px solid var(--ms-blue) !important;
+        border-radius: 4px !important;
+        color: #004578 !important;
     }
     
-    /* ===== Markdown Tables with Zebra Stripes ===== */
+    /* ===== Markdown Tables - Excel Style ===== */
     .stMarkdown table {
         width: 100% !important;
-        border-collapse: separate !important;
-        border-spacing: 0 !important;
-        border-radius: 10px !important;
-        overflow: hidden !important;
-        background: rgba(15, 23, 42, 0.8) !important;
-        border: 1px solid rgba(148, 163, 184, 0.2) !important;
+        border-collapse: collapse !important;
+        background: #FFFFFF !important;
+        border: 1px solid var(--ms-gray-30) !important;
     }
     
     .stMarkdown table thead th {
-        background: linear-gradient(135deg, #1E293B 0%, #334155 100%) !important;
-        color: #F1F5F9 !important;
+        background: var(--ms-gray-20) !important;
+        color: var(--ms-gray-130) !important;
         font-weight: 600 !important;
-        padding: 0.875rem 1rem !important;
+        padding: 0.6rem 1rem !important;
         text-align: left !important;
-        border-bottom: 2px solid rgba(96, 165, 250, 0.3) !important;
+        border-bottom: 1px solid var(--ms-gray-40) !important;
     }
     
     .stMarkdown table tbody tr:nth-child(odd) {
-        background: rgba(30, 41, 59, 0.5) !important;
+        background: #FFFFFF !important;
     }
     
     .stMarkdown table tbody tr:nth-child(even) {
-        background: rgba(15, 23, 42, 0.7) !important;
+        background: var(--ms-gray-10) !important;
     }
     
     .stMarkdown table tbody tr:hover {
-        background: rgba(59, 130, 246, 0.15) !important;
+        background: var(--ms-blue-light) !important;
     }
     
     .stMarkdown table td {
-        color: #E2E8F0 !important;
-        padding: 0.75rem 1rem !important;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
+        color: var(--ms-gray-130) !important;
+        padding: 0.5rem 1rem !important;
+        border-bottom: 1px solid var(--ms-gray-30) !important;
     }
     
-    /* ===== Text Input Fields ===== */
+    /* ===== Text Input - Office Style ===== */
     [data-testid="stTextInput"] input,
     .stTextInput > div > div > input {
-        background: rgba(30, 41, 59, 0.7) !important;
-        border: 1px solid rgba(148, 163, 184, 0.3) !important;
-        border-radius: 8px !important;
-        color: #F1F5F9 !important;
-        padding: 0.75rem 1rem !important;
+        background: #FFFFFF !important;
+        border: 1px solid var(--ms-gray-40) !important;
+        border-radius: 4px !important;
+        color: var(--ms-gray-130) !important;
+        padding: 0.5rem 0.75rem !important;
     }
     
     [data-testid="stTextInput"] input:focus,
     .stTextInput > div > div > input:focus {
-        border-color: #3B82F6 !important;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        border-color: var(--ms-blue) !important;
+        box-shadow: none !important;
+        outline: none !important;
     }
     
-    /* ===== Checkbox & Toggle ===== */
+    /* ===== Checkbox - Office Style ===== */
     .stCheckbox label,
     [data-testid="stCheckbox"] label {
-        color: #E2E8F0 !important;
+        color: var(--ms-gray-130) !important;
     }
     
-    /* ===== Download Buttons ===== */
+    /* ===== Download Buttons - Office Style ===== */
     [data-testid="stDownloadButton"] > button,
     .stDownloadButton > button {
-        background: rgba(30, 41, 59, 0.7) !important;
-        color: #E2E8F0 !important;
-        border: 1px solid rgba(148, 163, 184, 0.3) !important;
-        border-radius: 8px !important;
-        font-weight: 500 !important;
-        transition: all 0.3s ease !important;
+        background: #FFFFFF !important;
+        color: var(--ms-blue) !important;
+        border: 1px solid var(--ms-blue) !important;
+        border-radius: 4px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
     }
     
     [data-testid="stDownloadButton"] > button:hover,
     .stDownloadButton > button:hover {
-        background: rgba(59, 130, 246, 0.2) !important;
-        border-color: rgba(96, 165, 250, 0.5) !important;
+        background: var(--ms-blue-light) !important;
     }
     
     /* ===== Spinner ===== */
     .stSpinner > div {
-        border-top-color: #3B82F6 !important;
+        border-top-color: var(--ms-blue) !important;
     }
     
     /* ===== Horizontal Rule ===== */
     hr {
         border: none !important;
         height: 1px !important;
-        background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.3), transparent) !important;
-        margin: 2rem 0 !important;
+        background: var(--ms-gray-30) !important;
+        margin: 1.5rem 0 !important;
     }
     
-    /* ===== Scrollbar Styling ===== */
+    /* ===== Scrollbar - Office Style ===== */
     ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
     }
     
     ::-webkit-scrollbar-track {
-        background: rgba(15, 23, 42, 0.5);
-        border-radius: 4px;
+        background: var(--ms-gray-20);
     }
     
     ::-webkit-scrollbar-thumb {
-        background: rgba(148, 163, 184, 0.3);
-        border-radius: 4px;
+        background: var(--ms-gray-40);
+        border-radius: 0;
     }
     
     ::-webkit-scrollbar-thumb:hover {
-        background: rgba(148, 163, 184, 0.5);
+        background: var(--ms-gray-90);
     }
     
-    /* ===== General Text Override ===== */
+    /* ===== General Text ===== */
     .stMarkdown, .stMarkdown p, p, span {
-        color: #CBD5E1 !important;
+        color: var(--ms-gray-130) !important;
     }
     
     .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, 
     .stMarkdown h4, .stMarkdown h5, .stMarkdown h6,
     h1, h2, h3, h4, h5, h6 {
-        color: #F1F5F9 !important;
+        color: var(--ms-gray-150) !important;
         font-weight: 600 !important;
     }
     
     /* ===== Code Blocks ===== */
     [data-testid="stCodeBlock"],
     .stCodeBlock {
-        background: rgba(15, 23, 42, 0.9) !important;
-        border: 1px solid rgba(148, 163, 184, 0.2) !important;
-        border-radius: 8px !important;
+        background: var(--ms-gray-10) !important;
+        border: 1px solid var(--ms-gray-30) !important;
+        border-radius: 4px !important;
     }
     
     /* ===== JSON Viewer ===== */
     [data-testid="stJson"] {
-        background: rgba(15, 23, 42, 0.9) !important;
-        border-radius: 8px !important;
+        background: var(--ms-gray-10) !important;
+        border-radius: 4px !important;
     }
 </style>
 """
@@ -1071,15 +1062,17 @@ def main():
     st.markdown('<p class="main-header">Claim Integrity Engine</p>', unsafe_allow_html=True)
     st.markdown('<p class="sub-header">Xactimate Estimate Analysis & Leakage Detection Platform</p>', unsafe_allow_html=True)
     
-    # Sidebar
+    # Sidebar - Office Navigation Pane
     with st.sidebar:
         st.markdown('''
-        <div style="text-align: center; padding: 0.5rem;">
-            <span style="font-size: 2.5rem;">🛡️</span>
-            <p style="font-size: 0.75rem; color: #94A3B8; margin-top: 0.5rem; letter-spacing: 0.1em;">ENTERPRISE</p>
+        <div style="padding: 0.75rem 0; border-bottom: 1px solid #EDEBE9; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.5rem;">📊</span>
+                <span style="font-weight: 600; color: #323130; font-size: 1rem;">Claim Auditor</span>
+            </div>
         </div>
         ''', unsafe_allow_html=True)
-        st.title("Configuration")
+        st.markdown("#### Navigation")
         st.markdown("---")
         
         # API Key handling - prioritize st.secrets for cloud deployment
@@ -1275,73 +1268,73 @@ LEAKAGE FINDINGS
                 )
     
     elif not uploaded_file:
-        # Welcome screen - Professional Enterprise Design
+        # Welcome screen - Microsoft Office Style
         st.markdown("---")
         
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
             st.markdown("""
-            <div style="text-align: center; padding: 2.5rem; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
-                <h2 style="color: #F1F5F9; font-weight: 600; margin-bottom: 0.75rem;">Upload Estimate to Begin</h2>
-                <p style="color: #94A3B8; margin-top: 0.75rem; font-size: 0.95rem;">
+            <div style="text-align: center; padding: 2.5rem; background: #FFFFFF; border: 1px solid #EDEBE9; border-radius: 4px; box-shadow: 0 1.6px 3.6px 0 rgba(0,0,0,0.132);">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
+                <h2 style="color: #323130; font-weight: 600; margin-bottom: 0.75rem;">Upload Estimate to Begin</h2>
+                <p style="color: #605E5C; margin-top: 0.75rem; font-size: 0.95rem;">
                     Submit your Xactimate PDF for comprehensive audit analysis
                 </p>
-                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(148, 163, 184, 0.2);">
-                    <p style="color: #64748B; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;">Analysis Coverage</p>
-                    <p style="color: #CBD5E1; margin-top: 0.5rem;">Water Mitigation  •  Flooring  •  Roofing  •  Financials</p>
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #EDEBE9;">
+                    <p style="color: #605E5C; font-size: 0.8rem;">Analysis Coverage</p>
+                    <p style="color: #323130; margin-top: 0.5rem;">Water Mitigation  •  Flooring  •  Roofing  •  Financials</p>
                 </div>
             </div>
             """, unsafe_allow_html=True)
         
         st.markdown("---")
         
-        # Features - Clean Professional Cards
+        # Features - Office Style Cards
         st.markdown("### Audit Capabilities")
         
         feat1, feat2, feat3, feat4 = st.columns(4)
         
         with feat1:
             st.markdown("""
-            <div class="glass-metric-card" style="min-height: 120px;">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">💧</div>
-                <strong style="color: #F1F5F9;">Water Mitigation</strong>
-                <p style="color: #94A3B8; font-size: 0.85rem; margin-top: 0.5rem;">Equipment & category validation</p>
+            <div class="glass-metric-card">
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">💧</div>
+                <strong style="color: #323130;">Water Mitigation</strong>
+                <p style="color: #605E5C; font-size: 0.85rem; margin-top: 0.5rem;">Equipment & category validation</p>
             </div>
             """, unsafe_allow_html=True)
         
         with feat2:
             st.markdown("""
-            <div class="glass-metric-card" style="min-height: 120px;">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🏠</div>
-                <strong style="color: #F1F5F9;">Flooring Analysis</strong>
-                <p style="color: #94A3B8; font-size: 0.85rem; margin-top: 0.5rem;">Double-billing detection</p>
+            <div class="glass-metric-card">
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">🏠</div>
+                <strong style="color: #323130;">Flooring Analysis</strong>
+                <p style="color: #605E5C; font-size: 0.85rem; margin-top: 0.5rem;">Double-billing detection</p>
             </div>
             """, unsafe_allow_html=True)
         
         with feat3:
             st.markdown("""
-            <div class="glass-metric-card" style="min-height: 120px;">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🏗️</div>
-                <strong style="color: #F1F5F9;">Roofing Audit</strong>
-                <p style="color: #94A3B8; font-size: 0.85rem; margin-top: 0.5rem;">Waste factor validation</p>
+            <div class="glass-metric-card">
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">🏗️</div>
+                <strong style="color: #323130;">Roofing Audit</strong>
+                <p style="color: #605E5C; font-size: 0.85rem; margin-top: 0.5rem;">Waste factor validation</p>
             </div>
             """, unsafe_allow_html=True)
         
         with feat4:
             st.markdown("""
-            <div class="glass-metric-card" style="min-height: 120px;">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">💰</div>
-                <strong style="color: #F1F5F9;">Financial Check</strong>
-                <p style="color: #94A3B8; font-size: 0.85rem; margin-top: 0.5rem;">Deductible & limits review</p>
+            <div class="glass-metric-card">
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">💰</div>
+                <strong style="color: #323130;">Financial Check</strong>
+                <p style="color: #605E5C; font-size: 0.85rem; margin-top: 0.5rem;">Deductible & limits review</p>
             </div>
             """, unsafe_allow_html=True)
     
-    # Footer - Professional
+    # Footer - Office Style
     st.markdown("---")
     st.markdown("""
-    <div style="text-align: center; color: #64748B; padding: 1rem;">
-        <p style="font-size: 0.85rem;">Claim Integrity Engine™  •  Enterprise Audit Platform</p>
+    <div style="text-align: center; color: #605E5C; padding: 1rem;">
+        <p style="font-size: 0.85rem;">Claim Integrity Engine  •  Enterprise Audit Platform</p>
         <p style="font-size: 0.7rem; margin-top: 0.25rem;">🔒 PII Redaction Enabled  •  SOC2 Compliant Architecture</p>
     </div>
     """, unsafe_allow_html=True)
