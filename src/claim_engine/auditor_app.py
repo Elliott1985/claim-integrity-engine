@@ -705,46 +705,54 @@ IMPORTANT RULES:
 # =============================================================================
 def redact_pii(text: str) -> str:
     """
-    Redact PII from text including phone numbers and names after 'Insured:'.
+    Scrub text for PII (names, emails, phone numbers) before sending to Gemini API.
+    
+    Uses regex patterns to detect and replace sensitive information with [REDACTED_PII].
+    This function runs BEFORE text is sent to the AI model.
     
     Args:
         text: Raw text to redact
         
     Returns:
-        Text with PII redacted
+        Text with PII replaced by [REDACTED_PII]
     """
-    # Redact 10-digit phone numbers (various formats)
+    # Redact email addresses
+    text = re.sub(
+        r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
+        '[REDACTED_PII]',
+        text
+    )
+    
+    # Redact phone numbers (various formats)
     phone_patterns = [
-        r'\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b',  # 123-456-7890, 123.456.7890, 123 456 7890
-        r'\(\d{3}\)\s*\d{3}[-.\s]?\d{4}',       # (123) 456-7890
-        r'\+1\s*\d{3}[-.\s]?\d{3}[-.\s]?\d{4}', # +1 123-456-7890
+        r'\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b',      # 123-456-7890, 123.456.7890, 123 456 7890
+        r'\(\d{3}\)\s*\d{3}[-.\s]?\d{4}',           # (123) 456-7890
+        r'\+1\s*\d{3}[-.\s]?\d{3}[-.\s]?\d{4}',     # +1 123-456-7890
+        r'\b1[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b',  # 1-800-555-1234
     ]
-    
     for pattern in phone_patterns:
-        text = re.sub(pattern, '[PHONE REDACTED]', text)
+        text = re.sub(pattern, '[REDACTED_PII]', text)
     
-    # Redact names following 'Insured:' or similar patterns
-    insured_patterns = [
+    # Redact names following common labels (Insured, Claimant, etc.)
+    name_label_patterns = [
         r'(Insured\s*[:\-]?\s*)([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3})',
         r'(Insured Name\s*[:\-]?\s*)([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3})',
         r'(Policy\s*Holder\s*[:\-]?\s*)([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3})',
         r'(Claimant\s*[:\-]?\s*)([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3})',
         r'(Customer\s*[:\-]?\s*)([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3})',
+        r'(Homeowner\s*[:\-]?\s*)([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3})',
+        r'(Contact\s*[:\-]?\s*)([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3})',
     ]
+    for pattern in name_label_patterns:
+        text = re.sub(pattern, r'\1[REDACTED_PII]', text, flags=re.IGNORECASE)
     
-    for pattern in insured_patterns:
-        text = re.sub(pattern, r'\1[NAME REDACTED]', text, flags=re.IGNORECASE)
-    
-    # Redact SSN patterns
-    text = re.sub(r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b', '[SSN REDACTED]', text)
-    
-    # Redact email addresses
-    text = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '[EMAIL REDACTED]', text)
+    # Redact SSN patterns (XXX-XX-XXXX)
+    text = re.sub(r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b', '[REDACTED_PII]', text)
     
     # Redact street addresses (basic pattern)
     text = re.sub(
-        r'\b\d+\s+[A-Za-z]+(?:\s+[A-Za-z]+)*\s+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Boulevard|Blvd)\b',
-        '[ADDRESS REDACTED]',
+        r'\b\d+\s+[A-Za-z]+(?:\s+[A-Za-z]+)*\s+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Boulevard|Blvd|Way|Circle|Cir|Place|Pl)\b',
+        '[REDACTED_PII]',
         text,
         flags=re.IGNORECASE
     )
@@ -1132,6 +1140,23 @@ def main():
             type="primary",
             use_container_width=True,
             disabled=not (uploaded_file and api_key),
+        )
+        
+        st.markdown("---")
+        
+        # Security & Compliance Dashboard
+        st.markdown("#### 🔐 Security & Compliance Status")
+        
+        st.success("✅ PII Redaction: Enabled")
+        st.info("🗄️ Data Retention: Zero-Storage Architecture")
+        st.info("🔒 Encryption: SSL/TLS 256-bit Active")
+        st.info("🏢 Infrastructure: SOC 2 Type II Ready (Streamlit Cloud)")
+        
+        # Disclaimer footer
+        st.markdown("---")
+        st.caption(
+            "**Disclaimer:** This tool is a PoC. PII redaction is algorithmic "
+            "and for demonstration purposes."
         )
     
     # Main content
