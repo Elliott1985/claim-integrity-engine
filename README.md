@@ -1,32 +1,75 @@
-# Universal Claim Integrity & Leakage Engine
+# Claim Integrity Engine  
+AI-Assisted Claim Leakage Detection & QA Automation System
 
-A Python-based modular insurance claim auditing system designed to detect billing discrepancies, policy violations, and leakage risks in property insurance claims.
+A modular Python-based insurance claim auditing engine designed to detect billing discrepancies, policy violations, and potential claim leakage risks in property insurance estimates.
 
-## Features
+Built to simulate enterprise-grade QA validation logic for claims operations and insurtech automation workflows.
 
-### Phase 1: Financial & Policy Validation
+---
+
+## Overview
+
+Claim Integrity Engine analyzes structured claim data and applies domain-specific validation rules to flag high-risk indicators such as deductible misapplication, duplicate line items, excessive remediation equipment usage, and coverage limit violations.
+
+Designed for:
+
+- Claims QA Reviewers  
+- Audit & Compliance Teams  
+- Claims Operations Leaders  
+- Insurtech Product Teams  
+- Workflow Automation Engineers  
+
+---
+
+## Core Capabilities
+
+### Financial & Policy Validation
 - Deductible verification
-- Coverage Limits (A, B, C) validation
-- Sub-limits enforcement
-- Net claim calculations
+- Coverage A / B / C validation
+- Sub-limit enforcement
+- Net claim recalculation checks
+- Payment discrepancy detection
 
-### Phase 2: Water Remediation Module (WTR)
-- Equipment audit (Air Movers, Dehumidifiers vs. room square footage)
+### Water Remediation Module (WTR)
+- Equipment-to-square-footage validation (Air Movers / Dehumidifiers)
+- Category-based (Cat 1 / 2 / 3) billing verification
 - Daily monitoring labor validation
-- Category-based (Cat 1/2/3) billing verification
+- Equipment overuse risk flagging
 
-### Phase 3: Flooring & Finish Module (FCC/FNC)
-- Waste percentage calculations and auditing
-- Overlap detection (e.g., carpet + pad removal)
+### Flooring & Finish Module (FCC / FNC)
+- Waste percentage calculation and anomaly detection
+- Overlap detection (e.g., carpet + pad removal double-billing)
 - Floor preparation gap analysis
 
-### Phase 4: General Repair & Remediation
-- Double-dip detection (redundant line items)
+### General Repair & Remediation
+- Double-dip detection (redundant or overlapping line items)
 - Content protection verification
+- Rule-based anomaly flagging
 
-### Compliance & Security
-- PII Redaction for SOC2 compliance
-- Comprehensive Audit Scorecard output
+---
+
+## Business Objective
+
+This engine demonstrates how structured rule-based automation can:
+
+- Standardize QA review logic across files
+- Reduce manual audit time
+- Identify potential overpayment indicators
+- Improve estimate validation consistency
+- Detect claim leakage patterns prior to payment issuance
+
+The project serves as a prototype for scalable insurance workflow automation and structured audit intelligence systems.
+
+---
+
+## Compliance & Security
+
+- PII redaction module (SOC2-conscious design)
+- Structured audit scorecard output
+- Modular rule engine architecture
+- Extensible validation framework
+
+---
 
 ## Installation
 
@@ -42,6 +85,8 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -e ".[dev]"
 ```
+
+---
 
 ## Usage
 
@@ -62,8 +107,7 @@ claim_data = {
     },
     "line_items": [
         {"code": "WTR_AIRF", "description": "Air Mover - per unit/day", "quantity": 5, "unit_price": 35.00},
-        {"code": "WTR_DEHUM", "description": "Dehumidifier - per unit/day", "quantity": 2, "unit_price": 75.00},
-        # ... more line items
+        {"code": "WTR_DEHUM", "description": "Dehumidifier - per unit/day", "quantity": 2, "unit_price": 75.00}
     ],
     "property_details": {
         "affected_rooms": [
@@ -81,6 +125,8 @@ scorecard = engine.audit(claim_data)
 scorecard.print_summary()
 ```
 
+---
+
 ## Architecture
 
 ```
@@ -90,25 +136,36 @@ src/claim_engine/
 │   ├── xactimate_parser.py # Regex-based code parsing
 │   └── models.py           # Pydantic data models
 ├── modules/
-│   ├── financial.py        # Phase 1: Financial validation
-│   ├── water_remediation.py# Phase 2: WTR audits
-│   ├── flooring.py         # Phase 3: FCC/FNC audits
-│   └── general_repair.py   # Phase 4: General repairs
+│   ├── financial.py        # Financial validation
+│   ├── water_remediation.py# WTR audits
+│   ├── flooring.py         # FCC/FNC audits
+│   └── general_repair.py   # General repair audits
 ├── utils/
-│   └── pii_redaction.py    # SOC2 compliance
+│   └── pii_redaction.py    # SOC2-aligned redaction utilities
 ├── reporting/
 │   └── scorecard.py        # Audit scorecard generation
-└── engine.py               # Main orchestrator
+└── engine.py               # Main orchestration layer
 ```
+
+---
+
+## Design Principles
+
+- Modular rule-based architecture  
+- Domain-specific validation logic  
+- Extensible rule injection framework  
+- Separation of financial vs operational audits  
+- Automation-ready reporting output  
+
+---
 
 ## Adding Custom Rules
 
-The rule engine uses a dictionary-based approach for easy extensibility:
+The rule engine supports dynamic extensibility:
 
 ```python
 from claim_engine.core.rule_engine import RuleEngine
 
-# Add a new rule
 RuleEngine.add_rule(
     code_pattern=r"WTR_.*",
     rule_name="custom_water_rule",
@@ -116,6 +173,10 @@ RuleEngine.add_rule(
     category="leakage"
 )
 ```
+
+Designed to simulate scalable enterprise audit rule frameworks.
+
+---
 
 ## Testing
 
@@ -127,6 +188,19 @@ pytest
 pytest --cov=claim_engine
 ```
 
+---
+
+## Future Enhancements
+
+- ML-based anomaly scoring
+- Historical claim pattern analysis
+- API integration for live estimate ingestion
+- Dashboard visualization layer
+- Severity-based risk scoring engine
+
+---
+
 ## License
 
 MIT License
+
