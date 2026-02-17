@@ -1,9 +1,24 @@
-# Claim Integrity Engine  
+# Claim Integrity Engine
+
 AI-Assisted Claim Leakage Detection & QA Automation System
 
 A modular Python-based insurance claim auditing engine designed to detect billing discrepancies, policy violations, and potential claim leakage risks in property insurance estimates.
 
 Built to simulate enterprise-grade QA validation logic for claims operations and insurtech automation workflows.
+
+## Live Demo
+
+**Try the app:** [claim-integrity-engine.streamlit.app](https://claim-integrity-engine.streamlit.app)
+
+## Screenshots
+
+| Upload Screen | Dashboard Summary |
+|---------------|-------------------|
+| ![Upload Screen](docs/images/upload-screen.png) | ![Dashboard Summary](docs/images/dashboard-summary.png) |
+
+| Audit Findings | Export Report |
+|----------------|---------------|
+| ![Audit Findings](docs/images/audit-findings.png) | ![Export Report](docs/images/export-report.png) |
 
 ---
 

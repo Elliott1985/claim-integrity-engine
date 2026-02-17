@@ -7,6 +7,7 @@ Uses Google Gemini to analyze and audit insurance claim estimates.
 import json
 import os
 import re
+import time
 from pathlib import Path
 from typing import Any
 
@@ -899,7 +900,7 @@ def render_kpis(audit_data: dict[str, Any]) -> None:
         delta_class = "positive" if accuracy >= 70 else "negative"
         st.markdown(
             render_glass_metric(
-                label="📊 ACCURACY SCORE",
+                label="ACCURACY SCORE",
                 value=f"{accuracy}/100",
                 delta=f"{accuracy - 70:+.0f} vs benchmark" if accuracy else "N/A",
                 value_class=value_class,
@@ -914,7 +915,7 @@ def render_kpis(audit_data: dict[str, Any]) -> None:
         value_class = "negative" if leakage > 0 else "positive"
         st.markdown(
             render_glass_metric(
-                label="🚨 TOTAL LEAKAGE",
+                label="TOTAL LEAKAGE",
                 value=f"${leakage:,.2f}",
                 delta=f"{leakage_count} issues found",
                 value_class=value_class,
@@ -928,7 +929,7 @@ def render_kpis(audit_data: dict[str, Any]) -> None:
         deductible = financial.get('deductible', 0)
         st.markdown(
             render_glass_metric(
-                label="💰 NET CLAIM",
+                label="NET CLAIM",
                 value=f"${net_claim:,.2f}",
                 delta=f"After ${deductible:,.0f} deductible",
             ),
@@ -937,14 +938,16 @@ def render_kpis(audit_data: dict[str, Any]) -> None:
     
     with col4:
         risk = summary.get("risk_level", "Unknown")
-        risk_emoji = {"High": "🔴", "Medium": "🟡", "Low": "🟢"}.get(risk, "⚪")
+        risk_indicator = {"High": "●", "Medium": "●", "Low": "●"}.get(risk, "○")
         value_class = {"High": "negative", "Medium": "warning", "Low": "positive"}.get(risk, "")
         finding_count = len(audit_data.get('leakage_findings', []))
+        compliance_count = summary.get('compliance_flags_count', 0)
+        total_flags = finding_count + compliance_count
         st.markdown(
             render_glass_metric(
-                label="⚠️ RISK LEVEL",
-                value=f"{risk_emoji} {risk}",
-                delta=f"{finding_count} flags",
+                label="RISK LEVEL",
+                value=f"{risk_indicator} {risk}",
+                delta=f"{total_flags} flags triggered",
                 value_class=value_class,
             ),
             unsafe_allow_html=True,
@@ -957,7 +960,7 @@ def render_leakage_summary(findings: list[dict]) -> None:
         st.success("✅ No leakage issues detected!")
         return
     
-    st.markdown("### 💸 Leakage Summary - Potential Savings")
+    st.markdown("### Leakage Summary - Potential Savings")
     
     # Create summary DataFrame
     summary_data = []
@@ -982,7 +985,7 @@ def render_leakage_summary(findings: list[dict]) -> None:
     
     # Total savings
     total_savings = sum(f.get("potential_savings", 0) for f in findings)
-    st.markdown(f"### 💵 **Total Potential Savings: ${total_savings:,.2f}**")
+    st.markdown(f"**Total Potential Savings: ${total_savings:,.2f}**")
 
 
 def render_detailed_findings(findings: list[dict]) -> None:
@@ -990,7 +993,7 @@ def render_detailed_findings(findings: list[dict]) -> None:
     if not findings:
         return
     
-    st.markdown("### 📋 Detailed Audit Findings")
+    st.markdown("### Detailed Audit Findings")
     
     for i, finding in enumerate(findings, 1):
         severity = finding.get("severity", "Medium")
@@ -1015,7 +1018,7 @@ def render_detailed_findings(findings: list[dict]) -> None:
 
 def render_financial_breakdown(financial: dict) -> None:
     """Render financial summary breakdown."""
-    st.markdown("### 💳 Financial Breakdown")
+    st.markdown("### Financial Breakdown")
     
     col1, col2 = st.columns(2)
     
@@ -1050,7 +1053,7 @@ def render_line_items(line_items: list[dict]) -> None:
     if not line_items:
         return
     
-    with st.expander("📑 View All Line Items", expanded=False):
+    with st.expander("View All Line Items", expanded=False):
         df = pd.DataFrame(line_items)
         if not df.empty:
             # Format currency columns
@@ -1069,6 +1072,7 @@ def main():
     # Header - Professional Enterprise Branding
     st.markdown('<p class="main-header">Claim Integrity Engine</p>', unsafe_allow_html=True)
     st.markdown('<p class="sub-header">Xactimate Estimate Analysis & Leakage Detection Platform</p>', unsafe_allow_html=True)
+    st.caption("Automated QA validation for property insurance estimates.")
     
     # Sidebar - Office Navigation Pane
     with st.sidebar:
@@ -1084,7 +1088,7 @@ def main():
         st.markdown("---")
         
         # API Key handling - prioritize st.secrets for cloud deployment
-        st.subheader("🔑 API Settings")
+        st.subheader("API Settings")
         
         # Check for API key in secrets (Streamlit Cloud) first, then env var, then manual input
         default_api_key = ""
@@ -1118,34 +1122,37 @@ def main():
         st.markdown("---")
         
         # File upload
-        st.subheader("📄 Upload Estimate")
+        st.subheader("Upload Estimate")
         uploaded_file = st.file_uploader(
             "Upload Xactimate PDF",
             type=["pdf"],
             help="Upload your Xactimate estimate PDF file",
+            key="pdf_uploader",
+            label_visibility="collapsed",
         )
         
         st.markdown("---")
         
         # Options
-        st.subheader("⚙️ Options")
-        show_raw_text = st.checkbox("Show extracted text", value=False)
-        show_raw_json = st.checkbox("Show raw AI response", value=False)
+        st.subheader("Options")
+        show_raw_text = st.checkbox("Show extracted text", value=False, key="chk_raw_text")
+        show_raw_json = st.checkbox("Show raw AI response", value=False, key="chk_raw_json")
         
         st.markdown("---")
         
         # Analyze button
         analyze_btn = st.button(
-            "🔍 Analyze Estimate",
+            "Analyze Estimate",
             type="primary",
             use_container_width=True,
             disabled=not (uploaded_file and api_key),
+            key="btn_analyze",
         )
         
         st.markdown("---")
         
         # Security & Compliance Dashboard
-        st.markdown("#### 🔐 Security & Compliance Status")
+        st.markdown("#### Security & Compliance")
         
         st.success("✅ PII Redaction: Enabled")
         st.info("🗄️ Data Retention: Zero-Storage Architecture")
@@ -1161,7 +1168,10 @@ def main():
     
     # Main content
     if uploaded_file and api_key and analyze_btn:
-        with st.spinner("📄 Extracting PDF text..."):
+        # Start timing
+        start_time = time.time()
+        
+        with st.spinner("Extracting PDF text..."):
             raw_text = extract_pdf_text(uploaded_file)
             
             if not raw_text.strip():
@@ -1169,21 +1179,32 @@ def main():
                 return
         
         if show_raw_text:
-            with st.expander("📝 Extracted PDF Text", expanded=False):
+            with st.expander("Extracted PDF Text", expanded=False):
                 st.text(raw_text[:5000] + "..." if len(raw_text) > 5000 else raw_text)
         
-        with st.spinner("🔒 Redacting PII..."):
+        with st.spinner("Redacting PII..."):
             redacted_text = redact_pii(raw_text)
         
-        with st.spinner("🤖 Analyzing with Gemini AI..."):
+        with st.spinner("Analyzing with Gemini AI..."):
             audit_result = analyze_with_gemini(redacted_text, api_key)
+        
+        # Calculate processing time
+        processing_time = time.time() - start_time
         
         if audit_result:
             # Store in session state
             st.session_state.audit_result = audit_result
             
+            # Calculate rules executed (findings + compliance flags)
+            findings_count = len(audit_result.get('leakage_findings', []))
+            compliance_count = audit_result.get('audit_summary', {}).get('compliance_flags_count', 0)
+            rules_executed = findings_count + compliance_count + len(audit_result.get('line_items', []))
+            
+            # Display processing metrics
+            st.caption(f"Processed in {processing_time:.2f}s  •  {rules_executed} rules executed")
+            
             if show_raw_json:
-                with st.expander("🔧 Raw AI Response", expanded=False):
+                with st.expander("Raw AI Response", expanded=False):
                     st.json(audit_result)
             
             st.markdown("---")
@@ -1208,7 +1229,7 @@ def main():
             with col2:
                 # Claim Info
                 claim_info = audit_result.get("claim_info", {})
-                st.markdown("### 📋 Claim Information")
+                st.markdown("### Claim Information")
                 st.markdown(f"""
                 | Field | Value |
                 |-------|-------|
@@ -1227,7 +1248,7 @@ def main():
                 
                 # Property Details
                 prop = audit_result.get("property_details", {})
-                st.markdown("### 🏠 Property Details")
+                st.markdown("### Property Details")
                 st.markdown(f"""
                 | Detail | Value |
                 |--------|-------|
@@ -1244,16 +1265,17 @@ def main():
             st.markdown("---")
             
             # Export Options
-            st.markdown("### 📤 Export Audit Report")
+            st.markdown("### Export Audit Report")
             
             exp1, exp2 = st.columns(2)
             
             with exp1:
                 st.download_button(
-                    label="📄 Download JSON Report",
+                    label="Download JSON Report",
                     data=json.dumps(audit_result, indent=2),
                     file_name=f"audit_report_{claim_info.get('claim_number', 'unknown')}.json",
                     mime="application/json",
+                    key="btn_json_dl",
                 )
             
             with exp2:
@@ -1286,10 +1308,11 @@ LEAKAGE FINDINGS
                     report_text += f"\n  {finding.get('description', '')}\n"
                 
                 st.download_button(
-                    label="📝 Download Text Report",
+                    label="Download Text Report",
                     data=report_text,
                     file_name=f"audit_report_{claim_info.get('claim_number', 'unknown')}.txt",
                     mime="text/plain",
+                    key="btn_txt_dl",
                 )
     
     elif not uploaded_file:
