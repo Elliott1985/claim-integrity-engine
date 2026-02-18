@@ -957,7 +957,7 @@ def render_kpis(audit_data: dict[str, Any]) -> None:
 def render_leakage_summary(findings: list[dict]) -> None:
     """Render the Leakage Summary table."""
     if not findings:
-        st.success("✅ No leakage issues detected!")
+        st.success("No leakage issues detected")
         return
     
     st.markdown("### Leakage Summary - Potential Savings")
@@ -1036,7 +1036,7 @@ def render_financial_breakdown(financial: dict) -> None:
     with col2:
         deductible_ok = financial.get("deductible_applied_correctly", True)
         if deductible_ok:
-            st.success("✅ Deductible correctly applied to ACV")
+            st.success("Deductible correctly applied to ACV")
         else:
             st.error("❌ Deductible calculation error detected!")
         
@@ -1045,7 +1045,7 @@ def render_financial_breakdown(financial: dict) -> None:
         actual_net = financial.get('net_claim', 0)
         
         if abs(expected_net - actual_net) > 0.01:
-            st.warning(f"⚠️ Net claim discrepancy: Expected ${expected_net:,.2f}, Got ${actual_net:,.2f}")
+            st.warning(f"Net claim discrepancy: Expected ${expected_net:,.2f}, Got ${actual_net:,.2f}")
 
 
 def render_line_items(line_items: list[dict]) -> None:
@@ -1079,7 +1079,7 @@ def main():
         st.markdown('''
         <div style="padding: 0.75rem 0; border-bottom: 1px solid #EDEBE9; margin-bottom: 1rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="font-size: 1.5rem;">📊</span>
+                <span style="font-size: 1.5rem;">◈</span>
                 <span style="font-weight: 600; color: #323130; font-size: 1rem;">Claim Auditor</span>
             </div>
         </div>
@@ -1106,7 +1106,7 @@ def main():
             default_api_key = os.environ.get("GOOGLE_API_KEY", "")
         
         if secrets_configured:
-            st.success("✅ API Key configured via Streamlit Secrets")
+            st.success("API Key configured via Streamlit Secrets")
             api_key = default_api_key
         else:
             api_key = st.text_input(
@@ -1117,7 +1117,7 @@ def main():
             )
             
             if not api_key:
-                st.warning("⚠️ Enter your Gemini API key to enable AI analysis")
+                st.warning("Enter your Gemini API key to enable AI analysis")
         
         st.markdown("---")
         
@@ -1154,10 +1154,10 @@ def main():
         # Security & Compliance Dashboard
         st.markdown("#### Security & Compliance")
         
-        st.success("✅ PII Redaction: Enabled")
-        st.info("🗄️ Data Retention: Zero-Storage Architecture")
-        st.info("🔒 Encryption: SSL/TLS 256-bit Active")
-        st.info("🏢 Infrastructure: SOC 2 Type II Ready (Streamlit Cloud)")
+        st.success("PII Redaction: Enabled")
+        st.info("Data Retention: Zero-Storage Architecture")
+        st.info("Encryption: SSL/TLS 256-bit Active")
+        st.info("Infrastructure: SOC 2 Type II Ready (Streamlit Cloud)")
         
         # Disclaimer footer
         st.markdown("---")
@@ -1323,7 +1323,7 @@ LEAKAGE FINDINGS
         with col2:
             st.markdown("""
             <div style="text-align: center; padding: 2.5rem; background: #FFFFFF; border: 1px solid #EDEBE9; border-radius: 4px; box-shadow: 0 1.6px 3.6px 0 rgba(0,0,0,0.132);">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⬚</div>
                 <h2 style="color: #323130; font-weight: 600; margin-bottom: 0.75rem;">Upload Estimate to Begin</h2>
                 <p style="color: #605E5C; margin-top: 0.75rem; font-size: 0.95rem;">
                     Submit your Xactimate PDF for comprehensive audit analysis
@@ -1345,7 +1345,7 @@ LEAKAGE FINDINGS
         with feat1:
             st.markdown("""
             <div class="glass-metric-card">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">💧</div>
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">●</div>
                 <strong style="color: #323130;">Water Mitigation</strong>
                 <p style="color: #605E5C; font-size: 0.85rem; margin-top: 0.5rem;">Equipment & category validation</p>
             </div>
@@ -1354,7 +1354,7 @@ LEAKAGE FINDINGS
         with feat2:
             st.markdown("""
             <div class="glass-metric-card">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">🏠</div>
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">●</div>
                 <strong style="color: #323130;">Flooring Analysis</strong>
                 <p style="color: #605E5C; font-size: 0.85rem; margin-top: 0.5rem;">Double-billing detection</p>
             </div>
@@ -1363,7 +1363,7 @@ LEAKAGE FINDINGS
         with feat3:
             st.markdown("""
             <div class="glass-metric-card">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">🏗️</div>
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">●</div>
                 <strong style="color: #323130;">Roofing Audit</strong>
                 <p style="color: #605E5C; font-size: 0.85rem; margin-top: 0.5rem;">Waste factor validation</p>
             </div>
@@ -1372,7 +1372,7 @@ LEAKAGE FINDINGS
         with feat4:
             st.markdown("""
             <div class="glass-metric-card">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">💰</div>
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">●</div>
                 <strong style="color: #323130;">Financial Check</strong>
                 <p style="color: #605E5C; font-size: 0.85rem; margin-top: 0.5rem;">Deductible & limits review</p>
             </div>
