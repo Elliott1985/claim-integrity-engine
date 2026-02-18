@@ -8,7 +8,7 @@ Built to simulate enterprise-grade QA validation logic for claims operations and
 
 ## Live Demo
 
-**Try the app:** [claim-integrity-engine.streamlit.app](https://claim-integrity-engine.streamlit.app)
+**Try the app:** [https://elliott1985-claim-integrity-e-srcclaim-engineauditor-app-bduqtn.streamlit.app]([https://elliott1985-claim-integrity-e-srcclaim-engineauditor-app-bduqtn.streamlit.app])
 
 ## Screenshots
 
