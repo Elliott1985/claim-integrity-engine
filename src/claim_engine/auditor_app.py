@@ -938,7 +938,6 @@ def render_kpis(audit_data: dict[str, Any]) -> None:
     
     with col4:
         risk = summary.get("risk_level", "Unknown")
-        risk_indicator = {"High": "●", "Medium": "●", "Low": "●"}.get(risk, "○")
         value_class = {"High": "negative", "Medium": "warning", "Low": "positive"}.get(risk, "")
         finding_count = len(audit_data.get('leakage_findings', []))
         compliance_count = summary.get('compliance_flags_count', 0)
@@ -946,7 +945,7 @@ def render_kpis(audit_data: dict[str, Any]) -> None:
         st.markdown(
             render_glass_metric(
                 label="RISK LEVEL",
-                value=f"{risk_indicator} {risk}",
+                value=risk,
                 delta=f"{total_flags} flags triggered",
                 value_class=value_class,
             ),
@@ -997,9 +996,8 @@ def render_detailed_findings(findings: list[dict]) -> None:
     
     for i, finding in enumerate(findings, 1):
         severity = finding.get("severity", "Medium")
-        severity_icon = {"High": "🔴", "Medium": "🟡", "Low": "🟢"}.get(severity, "⚪")
         
-        with st.expander(f"{severity_icon} {finding.get('title', f'Finding {i}')} - ${finding.get('potential_savings', 0):,.2f}"):
+        with st.expander(f"[{severity}] {finding.get('title', f'Finding {i}')} - ${finding.get('potential_savings', 0):,.2f}"):
             col1, col2 = st.columns([2, 1])
             
             with col1:
@@ -1078,10 +1076,7 @@ def main():
     with st.sidebar:
         st.markdown('''
         <div style="padding: 0.75rem 0; border-bottom: 1px solid #EDEBE9; margin-bottom: 1rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="font-size: 1.5rem;">◈</span>
-                <span style="font-weight: 600; color: #323130; font-size: 1rem;">Claim Auditor</span>
-            </div>
+            <span style="font-weight: 600; color: #323130; font-size: 1rem;">Claim Auditor</span>
         </div>
         ''', unsafe_allow_html=True)
         st.markdown("#### Navigation")
@@ -1324,7 +1319,6 @@ LEAKAGE FINDINGS
         with col2:
             st.markdown("""
             <div style="text-align: center; padding: 2.5rem; background: #FFFFFF; border: 1px solid #EDEBE9; border-radius: 4px; box-shadow: 0 1.6px 3.6px 0 rgba(0,0,0,0.132);">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">⬚</div>
                 <h2 style="color: #323130; font-weight: 600; margin-bottom: 0.75rem;">Upload Estimate to Begin</h2>
                 <p style="color: #605E5C; margin-top: 0.75rem; font-size: 0.95rem;">
                     Submit your Xactimate PDF for comprehensive audit analysis
@@ -1346,7 +1340,6 @@ LEAKAGE FINDINGS
         with feat1:
             st.markdown("""
             <div class="glass-metric-card">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">●</div>
                 <strong style="color: #323130;">Water Mitigation</strong>
                 <p style="color: #605E5C; font-size: 0.85rem; margin-top: 0.5rem;">Equipment & category validation</p>
             </div>
@@ -1355,7 +1348,6 @@ LEAKAGE FINDINGS
         with feat2:
             st.markdown("""
             <div class="glass-metric-card">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">●</div>
                 <strong style="color: #323130;">Flooring Analysis</strong>
                 <p style="color: #605E5C; font-size: 0.85rem; margin-top: 0.5rem;">Double-billing detection</p>
             </div>
@@ -1364,7 +1356,6 @@ LEAKAGE FINDINGS
         with feat3:
             st.markdown("""
             <div class="glass-metric-card">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">●</div>
                 <strong style="color: #323130;">Roofing Audit</strong>
                 <p style="color: #605E5C; font-size: 0.85rem; margin-top: 0.5rem;">Waste factor validation</p>
             </div>
@@ -1373,7 +1364,6 @@ LEAKAGE FINDINGS
         with feat4:
             st.markdown("""
             <div class="glass-metric-card">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0078D4;">●</div>
                 <strong style="color: #323130;">Financial Check</strong>
                 <p style="color: #605E5C; font-size: 0.85rem; margin-top: 0.5rem;">Deductible & limits review</p>
             </div>
