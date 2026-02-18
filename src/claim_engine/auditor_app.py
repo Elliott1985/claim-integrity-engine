@@ -1038,7 +1038,7 @@ def render_financial_breakdown(financial: dict) -> None:
         if deductible_ok:
             st.success("Deductible correctly applied to ACV")
         else:
-            st.error("❌ Deductible calculation error detected!")
+            st.error("Deductible calculation error detected")
         
         # Verification calculation
         expected_net = financial.get('acv', 0) - financial.get('deductible', 0)
@@ -1114,6 +1114,7 @@ def main():
                 type="password",
                 help="Get your API key from https://aistudio.google.com/app/apikey",
                 value=default_api_key,
+                key="api_key_input",
             )
             
             if not api_key:
@@ -1383,7 +1384,7 @@ LEAKAGE FINDINGS
     st.markdown("""
     <div style="text-align: center; color: #605E5C; padding: 1rem;">
         <p style="font-size: 0.85rem;">Claim Integrity Engine  •  Enterprise Audit Platform</p>
-        <p style="font-size: 0.7rem; margin-top: 0.25rem;">🔒 PII Redaction Enabled  •  SOC2 Compliant Architecture</p>
+        <p style="font-size: 0.7rem; margin-top: 0.25rem;">PII Redaction Enabled  •  SOC2 Compliant Architecture</p>
     </div>
     """, unsafe_allow_html=True)
 
