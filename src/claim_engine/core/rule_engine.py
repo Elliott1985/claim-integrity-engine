@@ -43,7 +43,15 @@ class RuleEngine:
         self._finding_counter: int = 0
 
     def add_rule(self, rule: AuditRule) -> None:
-        """Add a rule to the engine."""
+        """Add a rule to the engine. If rule_id already exists, skip silently.
+
+        This prevents duplicate registrations when multiple validators share
+        the same RuleEngine instance — each validator only registers its rules
+        once regardless of how many times add_rule is called.
+        """
+        if rule.rule_id in self._rules:
+            return  # Already registered — no duplicate
+
         self._rules[rule.rule_id] = rule
         self._category_index[rule.category].append(rule.rule_id)
 
@@ -190,15 +198,14 @@ class RuleEngine:
         ]
 
 
-# Singleton instance for global rule registration
-_default_engine: RuleEngine | None = None
+# Module-level default engine — initialized at import time.
+# Note: prefer passing an explicit RuleEngine to validators rather than using
+# this global, to ensure finding ID uniqueness across modules.
+_default_engine: RuleEngine = RuleEngine()
 
 
 def get_default_engine() -> RuleEngine:
-    """Get the default rule engine instance."""
-    global _default_engine
-    if _default_engine is None:
-        _default_engine = RuleEngine()
+    """Get the module-level default rule engine instance."""
     return _default_engine
 
 

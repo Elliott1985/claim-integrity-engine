@@ -356,5 +356,11 @@ class GeneralRepairValidator:
         return findings
 
     def validate(self, claim: ClaimData) -> list[AuditFinding]:
-        """Run all general repair validations on a claim."""
-        return self.engine.execute_all(claim)
+        """Run only GEN-series rules against the claim."""
+        gen_rule_ids = [rid for rid in self.engine._rules if rid.startswith("GEN-")]
+        findings: list[AuditFinding] = []
+        for rid in gen_rule_ids:
+            rule = self.engine.get_rule(rid)
+            if rule:
+                findings.extend(self.engine.execute_rule(rule, claim))
+        return findings

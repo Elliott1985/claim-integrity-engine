@@ -1102,17 +1102,22 @@ def main():
         
         if secrets_configured:
             st.success("API Key configured via Streamlit Secrets")
+            # Do NOT store in session_state — resolve at call-time only
             api_key = default_api_key
         else:
+            # Never pre-fill with env var value — avoids key appearing in plain text
             api_key = st.text_input(
                 "Google Gemini API Key",
                 type="password",
                 help="Get your API key from https://aistudio.google.com/app/apikey",
-                value=default_api_key,
+                value="",
                 key="api_key_input",
             )
-            
-            if not api_key:
+            # If env var was set but not via secrets, use it silently
+            if not api_key and default_api_key:
+                api_key = default_api_key
+                st.success("API Key loaded from environment variable")
+            elif not api_key:
                 st.warning("Enter your Gemini API key to enable AI analysis")
         
         st.markdown("---")
@@ -1174,6 +1179,17 @@ def main():
                 st.error("Could not extract text from PDF. The file may be image-based or corrupted.")
                 return
         
+        # Guard against extremely large documents that could exhaust the
+        # Gemini context window or cause slow/failed responses.
+        MAX_TEXT_CHARS = 80_000
+        if len(raw_text) > MAX_TEXT_CHARS:
+            st.warning(
+                f"Document is very large ({len(raw_text):,} characters extracted). "
+                f"Truncating to first {MAX_TEXT_CHARS:,} characters. "
+                "For multi-hundred-page estimates, consider splitting the PDF."
+            )
+            raw_text = raw_text[:MAX_TEXT_CHARS]
+
         if show_raw_text:
             with st.expander("Extracted PDF Text", expanded=False):
                 st.text(raw_text[:5000] + "..." if len(raw_text) > 5000 else raw_text)

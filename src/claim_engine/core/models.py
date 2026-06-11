@@ -3,7 +3,7 @@ Core data models for the Claim Integrity Engine.
 Uses Pydantic for validation and serialization.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any
@@ -151,7 +151,7 @@ class AuditScorecard(BaseModel):
     """Complete audit scorecard output."""
 
     claim_id: str
-    audit_timestamp: datetime = Field(default_factory=datetime.utcnow)
+    audit_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     claim_summary: dict[str, Any] = Field(default_factory=dict)
     findings: list[AuditFinding] = Field(default_factory=list)
     summary: AuditSummary = Field(default_factory=AuditSummary)
@@ -175,7 +175,13 @@ class AuditScorecard(BaseModel):
                 self.summary.total_supplement_risk += finding.potential_impact
 
     def calculate_risk_score(self) -> float:
-        """Calculate overall risk score (0-100)."""
+        """Calculate overall risk score (0-100).
+
+        Uses a weighted average normalized by finding count so the score
+        reflects *severity mix* rather than raw volume.  A claim with 2
+        CRITICAL findings scores higher than one with 20 INFO findings,
+        regardless of total count.
+        """
         if not self.findings:
             self.summary.risk_score = 0.0
             return 0.0
@@ -187,10 +193,18 @@ class AuditScorecard(BaseModel):
             AuditSeverity.CRITICAL: 50,
         }
 
+        # Weighted average: sum of weights / (count * max_possible_weight)
         total_weight = sum(
             severity_weights.get(f.severity, 10) for f in self.findings
         )
+        max_possible = len(self.findings) * severity_weights[AuditSeverity.CRITICAL]
 
-        # Normalize to 0-100 scale (cap at 100)
-        self.summary.risk_score = min(100.0, total_weight)
+        # Normalize to 0-100; apply a mild volume multiplier (sqrt) so more
+        # findings do push the score up, but not linearly.
+        import math
+        volume_factor = min(1.0, math.sqrt(len(self.findings) / 10))
+        normalized = (total_weight / max_possible) * 100
+        blended = normalized * 0.7 + normalized * volume_factor * 0.3
+
+        self.summary.risk_score = round(min(100.0, blended), 1)
         return self.summary.risk_score

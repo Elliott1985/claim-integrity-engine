@@ -110,10 +110,12 @@ class FlooringValidator:
         # Group flooring items by type
         flooring_by_type: dict[str, dict[str, Decimal]] = {}
 
+        # Group by floor type, tracking quantity (area) and cost separately.
+        # Waste should be measured as area %, not cost % — price markup can
+        # skew a cost-based ratio even when actual waste is within limits.
         for item in claim.line_items:
             combined = f"{item.code} {item.description}"
 
-            # Determine flooring type
             floor_type = None
             max_waste = 0.15  # Default
 
@@ -133,49 +135,76 @@ class FlooringValidator:
             if floor_type:
                 if floor_type not in flooring_by_type:
                     flooring_by_type[floor_type] = {
-                        "material": Decimal("0"),
-                        "waste": Decimal("0"),
+                        "install_qty": Decimal("0"),
+                        "waste_qty": Decimal("0"),
+                        "install_cost": Decimal("0"),
+                        "waste_cost": Decimal("0"),
                         "max_waste": Decimal(str(max_waste)),
+                        "unit": item.unit,
                     }
 
-                if self.WASTE_PATTERN.search(combined):
-                    flooring_by_type[floor_type]["waste"] += item.total or Decimal("0")
-                elif self.INSTALL_PATTERN.search(combined):
-                    flooring_by_type[floor_type]["material"] += item.total or Decimal("0")
+                is_waste = bool(self.WASTE_PATTERN.search(combined))
+                is_install = bool(self.INSTALL_PATTERN.search(combined))
 
-        # Check waste percentages
+                if is_waste:
+                    flooring_by_type[floor_type]["waste_qty"] += Decimal(str(item.quantity))
+                    flooring_by_type[floor_type]["waste_cost"] += item.total or Decimal("0")
+                elif is_install:
+                    flooring_by_type[floor_type]["install_qty"] += Decimal(str(item.quantity))
+                    flooring_by_type[floor_type]["install_cost"] += item.total or Decimal("0")
+
         for floor_type, amounts in flooring_by_type.items():
-            if amounts["material"] > 0 and amounts["waste"] > 0:
-                waste_pct = amounts["waste"] / amounts["material"]
-                max_waste_pct = amounts["max_waste"]
+            install_qty = amounts["install_qty"]
+            waste_qty = amounts["waste_qty"]
+            max_waste_pct = amounts["max_waste"]
 
-                if waste_pct > max_waste_pct:
-                    excess_waste = amounts["waste"] - (amounts["material"] * max_waste_pct)
-                    findings.append(
-                        AuditFinding(
-                            finding_id=self.engine.generate_finding_id(),
-                            category=AuditCategory.LEAKAGE,
-                            severity=AuditSeverity.WARNING,
-                            rule_name="Flooring Waste Audit",
-                            title=f"Excessive {floor_type.title()} Waste",
-                            description=(
-                                f"{floor_type.title()} waste is {waste_pct:.1%} of material cost, "
-                                f"exceeding the {max_waste_pct:.0%} threshold for simple room profiles."
-                            ),
-                            potential_impact=excess_waste,
-                            evidence={
-                                "floor_type": floor_type,
-                                "material_cost": str(amounts["material"]),
-                                "waste_cost": str(amounts["waste"]),
-                                "waste_percentage": f"{waste_pct:.1%}",
-                                "threshold": f"{max_waste_pct:.0%}",
-                            },
-                            recommendation=(
-                                "Review room layout complexity. Higher waste may be justified "
-                                "for irregular rooms, stairs, or pattern matching."
-                            ),
-                        )
+            if install_qty <= 0 or waste_qty <= 0:
+                continue
+
+            # Prefer quantity-based ratio; fall back to cost if quantities are identical
+            # (which may indicate the contractor rolled them into one item)
+            waste_pct = waste_qty / install_qty
+            basis = "area"
+
+            if waste_pct == Decimal("1") and amounts["install_cost"] > 0:
+                # Likely a cost-only record — fall back gracefully
+                waste_pct = amounts["waste_cost"] / amounts["install_cost"]
+                basis = "cost (area unavailable)"
+
+            if waste_pct > max_waste_pct:
+                excess_qty = waste_qty - (install_qty * max_waste_pct)
+                # Estimate dollar impact from excess area × unit price
+                unit_price = (
+                    amounts["waste_cost"] / waste_qty if waste_qty > 0 else Decimal("0")
+                )
+                excess_cost = excess_qty * unit_price
+
+                findings.append(
+                    AuditFinding(
+                        finding_id=self.engine.generate_finding_id(),
+                        category=AuditCategory.LEAKAGE,
+                        severity=AuditSeverity.WARNING,
+                        rule_name="Flooring Waste Audit",
+                        title=f"Excessive {floor_type.title()} Waste",
+                        description=(
+                            f"{floor_type.title()} waste is {waste_pct:.1%} of install {basis}, "
+                            f"exceeding the {max_waste_pct:.0%} threshold for simple room profiles."
+                        ),
+                        potential_impact=excess_cost if excess_cost > 0 else None,
+                        evidence={
+                            "floor_type": floor_type,
+                            "install_qty": str(install_qty),
+                            "waste_qty": str(waste_qty),
+                            "waste_percentage": f"{waste_pct:.1%}",
+                            "threshold": f"{max_waste_pct:.0%}",
+                            "measurement_basis": basis,
+                        },
+                        recommendation=(
+                            "Review room layout complexity. Higher waste may be justified "
+                            "for irregular rooms, stairs, or pattern matching."
+                        ),
                     )
+                )
 
         return findings
 
@@ -365,5 +394,11 @@ class FlooringValidator:
         return findings
 
     def validate(self, claim: ClaimData) -> list[AuditFinding]:
-        """Run all flooring validations on a claim."""
-        return self.engine.execute_all(claim)
+        """Run only FLR-series rules against the claim."""
+        flr_rule_ids = [rid for rid in self.engine._rules if rid.startswith("FLR-")]
+        findings: list[AuditFinding] = []
+        for rid in flr_rule_ids:
+            rule = self.engine.get_rule(rid)
+            if rule:
+                findings.extend(self.engine.execute_rule(rule, claim))
+        return findings

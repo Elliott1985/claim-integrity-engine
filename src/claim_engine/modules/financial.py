@@ -13,6 +13,7 @@ from ..core.models import (
     ClaimData,
 )
 from ..core.rule_engine import AuditRule, RuleEngine
+from ..core.xactimate_parser import XactimateCategory, get_parser
 
 
 class FinancialValidator:
@@ -22,6 +23,7 @@ class FinancialValidator:
 
     def __init__(self, rule_engine: RuleEngine | None = None) -> None:
         self.engine = rule_engine or RuleEngine()
+        self.parser = get_parser()
         self._register_rules()
 
     def _register_rules(self) -> None:
@@ -138,13 +140,23 @@ class FinancialValidator:
         """Validate dwelling coverage limit."""
         findings: list[AuditFinding] = []
 
-        # Calculate dwelling-related charges
-        dwelling_codes = ["DRY", "PNT", "DEM", "WTR", "FCC", "FNC", "GEN"]
+        # Calculate dwelling-related charges using the parser for accurate
+        # categorization — avoids false negatives from raw prefix slicing.
+        dwelling_categories = {
+            XactimateCategory.DRY,
+            XactimateCategory.DRY_WALL,
+            XactimateCategory.PNT,
+            XactimateCategory.DEM,
+            XactimateCategory.WTR,
+            XactimateCategory.FCC,
+            XactimateCategory.FNC,
+            XactimateCategory.GEN,
+        }
         dwelling_total = Decimal("0")
 
         for item in claim.line_items:
-            code_prefix = item.code[:3].upper() if len(item.code) >= 3 else item.code.upper()
-            if code_prefix in dwelling_codes and item.total:
+            parsed = self.parser.parse_code(item.code, item.description)
+            if parsed.category in dwelling_categories and item.total:
                 dwelling_total += item.total
 
         if dwelling_total > claim.policy.coverage_a:

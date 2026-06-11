@@ -46,7 +46,11 @@ class ClaimIntegrityEngine:
         self.enable_general_repair = enable_general_repair
         self.auto_redact_pii = auto_redact_pii
 
-        # Initialize validators lazily
+        # Single shared RuleEngine so finding IDs are globally unique
+        # across all modules for the lifetime of this engine instance.
+        self._shared_rule_engine = RuleEngine()
+
+        # Initialize validators lazily, all wired to the shared engine
         self._financial_validator: FinancialValidator | None = None
         self._water_remediation_validator: WaterRemediationValidator | None = None
         self._flooring_validator: FlooringValidator | None = None
@@ -55,30 +59,30 @@ class ClaimIntegrityEngine:
 
     @property
     def financial_validator(self) -> FinancialValidator:
-        """Get or create the financial validator."""
+        """Get or create the financial validator (shared engine)."""
         if self._financial_validator is None:
-            self._financial_validator = FinancialValidator()
+            self._financial_validator = FinancialValidator(self._shared_rule_engine)
         return self._financial_validator
 
     @property
     def water_remediation_validator(self) -> WaterRemediationValidator:
-        """Get or create the water remediation validator."""
+        """Get or create the water remediation validator (shared engine)."""
         if self._water_remediation_validator is None:
-            self._water_remediation_validator = WaterRemediationValidator()
+            self._water_remediation_validator = WaterRemediationValidator(self._shared_rule_engine)
         return self._water_remediation_validator
 
     @property
     def flooring_validator(self) -> FlooringValidator:
-        """Get or create the flooring validator."""
+        """Get or create the flooring validator (shared engine)."""
         if self._flooring_validator is None:
-            self._flooring_validator = FlooringValidator()
+            self._flooring_validator = FlooringValidator(self._shared_rule_engine)
         return self._flooring_validator
 
     @property
     def general_repair_validator(self) -> GeneralRepairValidator:
-        """Get or create the general repair validator."""
+        """Get or create the general repair validator (shared engine)."""
         if self._general_repair_validator is None:
-            self._general_repair_validator = GeneralRepairValidator()
+            self._general_repair_validator = GeneralRepairValidator(self._shared_rule_engine)
         return self._general_repair_validator
 
     @property

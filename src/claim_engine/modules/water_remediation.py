@@ -95,6 +95,31 @@ class WaterRemediationValidator:
             )
         )
 
+            # Cat 2 — Black Water PPE billed on Gray Water loss
+        self.engine.add_rule(
+            AuditRule(
+                rule_id="WTR-006",
+                name="Cat 2 Black Water Upcharge",
+                description="Flag Category 3 (Black Water) PPE/biohazard items billed for Category 2 (Gray Water) loss",
+                category=AuditCategory.LEAKAGE,
+                severity=AuditSeverity.WARNING,
+                code_patterns=[r"PPE", r"HAZMAT", r"BIOHAZ", r"ANTIMICROBIAL"],
+                validator=self._validate_cat2_upcharge,
+            )
+        )
+
+        # Cat 2 — missing containment/antimicrobial
+        self.engine.add_rule(
+            AuditRule(
+                rule_id="WTR-007",
+                name="Cat 2 Missing Containment",
+                description="Flag Category 2 (Gray Water) losses that lack containment or antimicrobial treatment",
+                category=AuditCategory.SUPPLEMENT_RISK,
+                severity=AuditSeverity.INFO,
+                validator=self._validate_cat2_containment,
+            )
+        )
+
         # Equipment days vs labor days
         self.engine.add_rule(
             AuditRule(
@@ -120,7 +145,7 @@ class WaterRemediationValidator:
         for item in claim.line_items:
             combined = f"{item.code} {item.description}"
             if self.AIR_MOVER_PATTERN.search(combined):
-                air_mover_count += int(item.quantity)
+                air_mover_count += round(item.quantity)
                 air_mover_items.append(f"{item.code}: {item.quantity}")
 
         if air_mover_count == 0:
@@ -135,8 +160,11 @@ class WaterRemediationValidator:
         min_expected = total_sqft / self.AIR_MOVER_SQFT_MAX
         max_expected = total_sqft / self.AIR_MOVER_SQFT_MIN
 
-        if air_mover_count > max_expected * 1.2:  # 20% tolerance
-            excess = air_mover_count - int(max_expected)
+        import math
+        # Use ceiling for expected max to avoid flagging borderline-legitimate counts
+        expected_max_rounded = math.ceil(max_expected)
+        if air_mover_count > expected_max_rounded * 1.2:  # 20% tolerance
+            excess = air_mover_count - expected_max_rounded
             findings.append(
                 AuditFinding(
                     finding_id=self.engine.generate_finding_id(),
@@ -146,7 +174,7 @@ class WaterRemediationValidator:
                     title="Excessive Air Mover Count",
                     description=(
                         f"Billed {air_mover_count} air movers for {total_sqft:.0f} sq ft. "
-                        f"Industry standard is 1 per 50-70 sq ft (expected {int(min_expected)}-{int(max_expected)})"
+                        f"Industry standard is 1 per 50-70 sq ft (expected {math.floor(min_expected)}-{expected_max_rounded})"
                     ),
                     affected_items=air_mover_items,
                     potential_impact=Decimal(str(excess * 35)),  # Approx $35/day per unit
@@ -195,7 +223,7 @@ class WaterRemediationValidator:
         for item in claim.line_items:
             combined = f"{item.code} {item.description}"
             if self.DEHUMIDIFIER_PATTERN.search(combined):
-                dehumidifier_count += int(item.quantity)
+                dehumidifier_count += round(item.quantity)
                 dehumidifier_items.append(f"{item.code}: {item.quantity}")
 
         if dehumidifier_count == 0:
@@ -245,23 +273,45 @@ class WaterRemediationValidator:
         for item in claim.line_items:
             combined = f"{item.code} {item.description}"
             if self.DAILY_MONITOR_PATTERN.search(combined):
-                monitoring_days += int(item.quantity)
+                monitoring_days += round(item.quantity)
                 monitoring_items.append(f"{item.code}: {item.quantity} days")
 
         if monitoring_days == 0:
             return findings
 
-        # Find equipment days (air movers or dehumidifiers)
+        # Find equipment days (air movers or dehumidifiers).
+        # IMPORTANT: equipment quantity = units placed, NOT days.
+        # Reliable day counts require the item.days field to be populated.
         equipment_days = 0
+        missing_days_items: list[str] = []
         for item in claim.line_items:
             combined = f"{item.code} {item.description}"
             if self.AIR_MOVER_PATTERN.search(combined) or self.DEHUMIDIFIER_PATTERN.search(combined):
-                # Equipment is typically billed as quantity * days
                 if item.days:
                     equipment_days = max(equipment_days, item.days)
                 else:
-                    # If no days field, estimate from description or assume quantity is total days
-                    equipment_days = max(equipment_days, int(item.quantity))
+                    # days field not populated — cannot reliably compare
+                    missing_days_items.append(item.code)
+
+        # If days are missing on equipment, flag as data quality issue and skip comparison
+        if missing_days_items and monitoring_days > 0:
+            findings.append(
+                AuditFinding(
+                    finding_id=self.engine.generate_finding_id(),
+                    category=AuditCategory.LEAKAGE,
+                    severity=AuditSeverity.INFO,
+                    rule_name="Monitoring Labor Audit",
+                    title="Equipment Days Not Documented",
+                    description=(
+                        f"{len(missing_days_items)} equipment line item(s) are missing the 'days' field. "
+                        "Cannot validate monitoring labor against equipment rental period."
+                    ),
+                    affected_items=missing_days_items,
+                    evidence={"missing_days_count": len(missing_days_items)},
+                    recommendation="Ensure all equipment line items include the rental days field.",
+                )
+            )
+            return findings
 
         if equipment_days == 0 and monitoring_days > 0:
             findings.append(
@@ -405,6 +455,123 @@ class WaterRemediationValidator:
 
         return findings
 
+    def _validate_cat2_upcharge(
+        self, claim: ClaimData, context: dict[str, Any]
+    ) -> list[AuditFinding]:
+        """Flag Cat 3 PPE/biohazard items on a documented Cat 2 loss."""
+        findings: list[AuditFinding] = []
+
+        water_category = claim.property_details.water_category
+        if water_category != WaterCategory.CATEGORY_2:
+            return findings
+
+        # Cat 3-specific items that are not appropriate for gray water
+        cat3_only_pattern = re.compile(
+            r"(BIOHAZ|HAZMAT|TYVEK|FULL\s*FACE|RESPIRATOR|SEWAGE\s*CLEAN)", re.IGNORECASE
+        )
+        flagged: list[str] = []
+        flagged_total = Decimal("0")
+
+        for item in claim.line_items:
+            combined = f"{item.code} {item.description}"
+            if cat3_only_pattern.search(combined):
+                flagged.append(f"{item.code}: {item.description}")
+                if item.total:
+                    flagged_total += item.total
+
+        if flagged:
+            findings.append(
+                AuditFinding(
+                    finding_id=self.engine.generate_finding_id(),
+                    category=AuditCategory.LEAKAGE,
+                    severity=AuditSeverity.WARNING,
+                    rule_name="Cat 2 Black Water Upcharge",
+                    title="Category 3 Items Billed for Category 2 Loss",
+                    description=(
+                        f"Claim is documented as Category 2 (Gray Water) but includes "
+                        f"{len(flagged)} biohazard/Category 3-specific item(s). "
+                        "Verify if contamination escalated scope to Cat 3."
+                    ),
+                    affected_items=flagged,
+                    potential_impact=flagged_total,
+                    evidence={
+                        "documented_category": water_category.value,
+                        "flagged_item_count": len(flagged),
+                    },
+                    recommendation=(
+                        "Confirm water category classification. If scope was escalated to Cat 3, "
+                        "update the documented water category accordingly."
+                    ),
+                )
+            )
+
+        return findings
+
+    def _validate_cat2_containment(
+        self, claim: ClaimData, context: dict[str, Any]
+    ) -> list[AuditFinding]:
+        """Flag Cat 2 losses missing containment or antimicrobial treatment."""
+        findings: list[AuditFinding] = []
+
+        water_category = claim.property_details.water_category
+        if water_category != WaterCategory.CATEGORY_2:
+            return findings
+
+        containment_pattern = re.compile(
+            r"(CONTAINMENT|BARRIER|POLY\s*BARRIER|CRITICAL\s*BARRIER)", re.IGNORECASE
+        )
+        antimicrobial_pattern = re.compile(
+            r"(ANTIMICROBIAL|DISINFECT|SANITIZE|BIOCIDE|MICROBIAL\s*TREAT)", re.IGNORECASE
+        )
+
+        has_containment = False
+        has_antimicrobial = False
+
+        for item in claim.line_items:
+            combined = f"{item.code} {item.description}"
+            if containment_pattern.search(combined):
+                has_containment = True
+            if antimicrobial_pattern.search(combined):
+                has_antimicrobial = True
+
+        missing: list[str] = []
+        if not has_containment:
+            missing.append("containment barrier")
+        if not has_antimicrobial:
+            missing.append("antimicrobial treatment")
+
+        if missing:
+            findings.append(
+                AuditFinding(
+                    finding_id=self.engine.generate_finding_id(),
+                    category=AuditCategory.SUPPLEMENT_RISK,
+                    severity=AuditSeverity.INFO,
+                    rule_name="Cat 2 Missing Containment",
+                    title="Cat 2 Loss Missing Standard Remediation Items",
+                    description=(
+                        f"Category 2 (Gray Water) loss is missing: {', '.join(missing)}. "
+                        "IICRC S500 guidelines recommend both for gray water losses."
+                    ),
+                    evidence={
+                        "has_containment": has_containment,
+                        "has_antimicrobial": has_antimicrobial,
+                        "missing_items": missing,
+                    },
+                    recommendation=(
+                        "Verify if containment and antimicrobial application were performed. "
+                        "If so, add appropriate line items to prevent supplements."
+                    ),
+                )
+            )
+
+        return findings
+
     def validate(self, claim: ClaimData) -> list[AuditFinding]:
-        """Run all water remediation validations on a claim."""
-        return self.engine.execute_all(claim)
+        """Run only WTR-series rules against the claim."""
+        wtr_rule_ids = [rid for rid in self.engine._rules if rid.startswith("WTR-")]
+        findings: list[AuditFinding] = []
+        for rid in wtr_rule_ids:
+            rule = self.engine.get_rule(rid)
+            if rule:
+                findings.extend(self.engine.execute_rule(rule, claim))
+        return findings

@@ -39,7 +39,10 @@ class PIIRedactor:
     # Redaction placeholder
     REDACTED = "[REDACTED]"
 
-    # PII detection patterns
+    # PII detection patterns applied by default.
+    # NOTE: bank_account is intentionally excluded here — \b\d{8,17}\b is far
+    # too broad and would redact Xactimate line-item codes, job numbers, dollar
+    # amounts, and dates. Enable it explicitly via redact_bank_accounts=True.
     PATTERNS: dict[str, re.Pattern[str]] = {
         "ssn": re.compile(r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b"),
         "phone": re.compile(
@@ -51,7 +54,6 @@ class PIIRedactor:
         "credit_card": re.compile(
             r"\b(?:\d{4}[-\s]?){3}\d{4}\b|\b\d{15,16}\b"
         ),
-        "bank_account": re.compile(r"\b\d{8,17}\b"),  # Broad pattern, use with caution
         "drivers_license": re.compile(
             r"\b[A-Z]{1,2}\d{5,8}\b"  # Simplified pattern, varies by state
         ),
@@ -60,6 +62,12 @@ class PIIRedactor:
         ),
         "zip_code": re.compile(r"\b\d{5}(?:-\d{4})?\b"),
     }
+
+    # Opt-in bank account pattern. Only used when redact_bank_accounts=True.
+    # Excludes numbers preceded by $ to reduce false positives on dollar amounts.
+    BANK_ACCOUNT_PATTERN: re.Pattern[str] = re.compile(
+        r"(?<!\$)\b\d{8,17}\b"
+    )
 
     # Address pattern (more complex)
     ADDRESS_PATTERN = re.compile(
@@ -110,6 +118,7 @@ class PIIRedactor:
         self,
         redact_names: bool = True,
         redact_addresses: bool = True,
+        redact_bank_accounts: bool = False,
         custom_patterns: dict[str, re.Pattern[str]] | None = None,
     ) -> None:
         """
@@ -118,10 +127,14 @@ class PIIRedactor:
         Args:
             redact_names: Whether to redact detected names
             redact_addresses: Whether to redact detected addresses
+            redact_bank_accounts: Opt-in flag for bank account number redaction.
+                                  Disabled by default — the pattern is broad and
+                                  can create false positives in claim data.
             custom_patterns: Additional custom patterns to redact
         """
         self.redact_names = redact_names
         self.redact_addresses = redact_addresses
+        self.redact_bank_accounts = redact_bank_accounts
         self.custom_patterns = custom_patterns or {}
         self._redaction_log: list[RedactionResult] = []
 
@@ -151,6 +164,21 @@ class PIIRedactor:
                             original_value=match,
                             redacted_value=self.REDACTED,
                             pii_type=pii_type,
+                            field_path=field_path,
+                        )
+                    )
+                    result = result.replace(match, self.REDACTED)
+
+        # Opt-in bank account redaction
+        if self.redact_bank_accounts:
+            matches = self.BANK_ACCOUNT_PATTERN.findall(result)
+            for match in matches:
+                if match:
+                    self._redaction_log.append(
+                        RedactionResult(
+                            original_value=match,
+                            redacted_value=self.REDACTED,
+                            pii_type="bank_account",
                             field_path=field_path,
                         )
                     )

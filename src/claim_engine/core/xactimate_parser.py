@@ -16,7 +16,7 @@ class XactimateCategory(str, Enum):
     DRY = "DRY"  # Drying Equipment
     FCC = "FCC"  # Flooring - Carpet
     FNC = "FNC"  # Flooring - Non-Carpet (Hardwood, Tile, etc.)
-    DRY_WALL = "DRY"  # Drywall
+    DRY_WALL = "DRW"  # Drywall (distinct from DRY/drying equipment)
     PNT = "PNT"  # Painting
     CLN = "CLN"  # Cleaning
     DEM = "DEM"  # Demolition
@@ -46,8 +46,10 @@ class XactimateParser:
     """
 
     # Core category patterns
+    # NOTE: DRW must be checked before DRY so "DRW..." codes don't match DRY's pattern
     CATEGORY_PATTERNS: dict[str, re.Pattern[str]] = {
         "WTR": re.compile(r"^WTR[_\-]?", re.IGNORECASE),
+        "DRW": re.compile(r"^DRW[_\-]?", re.IGNORECASE),  # Drywall — must precede DRY
         "DRY": re.compile(r"^DRY[_\-]?", re.IGNORECASE),
         "FCC": re.compile(r"^FCC[_\-]?", re.IGNORECASE),
         "FNC": re.compile(r"^FNC[_\-]?", re.IGNORECASE),
@@ -304,13 +306,11 @@ class XactimateParser:
         return False
 
 
-# Singleton instance
-_parser_instance: XactimateParser | None = None
+# Module-level singleton — initialized at import time, avoiding the
+# check-then-set race condition under Streamlit's multi-threaded execution.
+_parser_instance: XactimateParser = XactimateParser()
 
 
 def get_parser() -> XactimateParser:
-    """Get the singleton parser instance."""
-    global _parser_instance
-    if _parser_instance is None:
-        _parser_instance = XactimateParser()
+    """Get the module-level singleton parser instance."""
     return _parser_instance
