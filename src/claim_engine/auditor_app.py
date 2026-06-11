@@ -795,69 +795,115 @@ def extract_pdf_text(uploaded_file) -> str:
 # =============================================================================
 # Gemini Integration
 # =============================================================================
+
+# Model preference order: try primary first, fall back on persistent 503s
+_GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash']
+_MAX_RETRIES = 3       # retries per model before falling back
+_RETRY_BASE_DELAY = 5  # seconds (doubles each retry: 5 → 10 → 20)
+
+
+def _call_gemini(client, model: str, user_prompt: str) -> str:
+    """Single attempt to call Gemini. Returns raw response text."""
+    response = client.models.generate_content(
+        model=model,
+        contents=types.Content(
+            parts=[types.Part(text=user_prompt)]
+        ),
+        config=types.GenerateContentConfig(
+            system_instruction=SYSTEM_MESSAGE,
+            temperature=0.2,
+            response_mime_type='application/json',
+        ),
+    )
+    return response.text.strip()
+
+
 def analyze_with_gemini(pdf_text: str, api_key: str) -> dict[str, Any] | None:
     """
     Send PDF text to Gemini for analysis using 2026 Google GenAI SDK.
-    
+    Retries up to 3 times with exponential backoff on 503 UNAVAILABLE errors,
+    then falls back to gemini-2.0-flash before giving up.
+
     Args:
         pdf_text: Extracted and redacted PDF text
         api_key: Google Gemini API key
-        
+
     Returns:
-        Parsed JSON response from Gemini
+        Parsed JSON response from Gemini, or None on failure
     """
     if genai is None:
         st.error("Google GenAI SDK not installed. Run: pip install google-genai")
         return None
-    
-    try:
-        # Initialize the client with the new 2026 SDK architecture
-        client = genai.Client(api_key=api_key)
-        
-        # Build the user prompt with PDF content
-        user_prompt = f"""---
+
+    client = genai.Client(api_key=api_key)
+
+    user_prompt = f"""---
 XACTIMATE ESTIMATE TEXT TO ANALYZE:
 ---
 {pdf_text}
 ---
 
 Analyze the above estimate and return the JSON audit report."""
-        
-        # Generate response using the new client.models.generate_content() API
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=types.Content(
-                parts=[types.Part(text=user_prompt)]
-            ),
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_MESSAGE,
-                temperature=0.2,  # Lower temperature for consistent JSON output
-                response_mime_type='application/json',  # Request JSON response directly
-            ),
+
+    response_text = None
+
+    for model in _GEMINI_MODELS:
+        for attempt in range(1, _MAX_RETRIES + 1):
+            try:
+                response_text = _call_gemini(client, model, user_prompt)
+                break  # success — exit retry loop
+            except Exception as e:
+                err_str = str(e)
+                is_503 = '503' in err_str or 'UNAVAILABLE' in err_str
+
+                if is_503 and attempt < _MAX_RETRIES:
+                    delay = _RETRY_BASE_DELAY * (2 ** (attempt - 1))  # 5s, 10s, 20s
+                    st.warning(
+                        f"Gemini ({model}) is busy — retrying in {delay}s "
+                        f"(attempt {attempt}/{_MAX_RETRIES})…"
+                    )
+                    time.sleep(delay)
+                elif is_503 and attempt == _MAX_RETRIES:
+                    # Exhausted retries for this model — try fallback
+                    if model != _GEMINI_MODELS[-1]:
+                        st.warning(
+                            f"{model} unavailable after {_MAX_RETRIES} retries. "
+                            f"Falling back to {_GEMINI_MODELS[_GEMINI_MODELS.index(model) + 1]}…"
+                        )
+                    break  # move to next model
+                else:
+                    # Non-503 error — fail immediately
+                    st.error(f"Gemini API error: {err_str}")
+                    return None
+        else:
+            # Inner loop completed without break (success)
+            break
+    else:
+        # All models exhausted
+        st.error(
+            "All Gemini models are currently unavailable (503). "
+            "This is a temporary Google capacity issue — please try again in a minute."
         )
-        
-        # Extract JSON from response
-        response_text = response.text.strip()
-        
-        # Handle markdown code blocks if present (fallback)
-        if response_text.startswith("```"):
-            lines = response_text.split("\n")
-            if lines[0].startswith("```"):
-                lines = lines[1:]
-            if lines[-1].strip() == "```":
-                lines = lines[:-1]
-            response_text = "\n".join(lines)
-        
-        # Parse JSON
-        result = json.loads(response_text)
-        return result
-        
+        return None
+
+    if response_text is None:
+        st.error("No response received from Gemini.")
+        return None
+
+    # Strip markdown code fences if present (fallback safety)
+    if response_text.startswith("```"):
+        lines = response_text.split("\n")
+        if lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines[-1].strip() == "```":
+            lines = lines[:-1]
+        response_text = "\n".join(lines)
+
+    try:
+        return json.loads(response_text)
     except json.JSONDecodeError as e:
         st.error(f"Failed to parse AI response as JSON: {e}")
-        st.code(response_text[:1000] if 'response_text' in dir() else "No response")
-        return None
-    except Exception as e:
-        st.error(f"Gemini API error: {str(e)}")
+        st.code(response_text[:1000])
         return None
 
 
